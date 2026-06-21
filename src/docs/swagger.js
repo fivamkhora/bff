@@ -49,7 +49,7 @@ const swaggerSpec = {
       description: 'Rotas agregadas para usuarios'
     },
     {
-      name: 'API IA',
+      name: 'APIIA',
       description: 'Rotas do BFF para consumir a api-ia'
     }
   ],
@@ -146,7 +146,7 @@ const swaggerSpec = {
     '/api/v1/ia/health': {
       get: {
         summary: 'Verifica a saude da api-ia pelo BFF',
-        tags: ['API IA'],
+        tags: ['APIIA'],
         description: `Encaminha a chamada para ${env.apiIaBaseUrl}/api/v1/health.`,
         responses: {
           200: {
@@ -175,7 +175,7 @@ const swaggerSpec = {
     '/api/v1/ia/assessments': {
       post: {
         summary: 'Cria uma avaliacao escolar pela api-ia',
-        tags: ['API IA'],
+        tags: ['APIIA'],
         description: 'O frontend deve consumir esta rota do BFF. O BFF encaminha Origin/Referer para a api-ia.',
         requestBody: {
           required: true,
@@ -216,7 +216,7 @@ const swaggerSpec = {
     '/api/v1/ia/assessments/{assessmentId}': {
       get: {
         summary: 'Busca uma avaliacao salva pela api-ia',
-        tags: ['API IA'],
+        tags: ['APIIA'],
         parameters: [
           {
             name: 'assessmentId',
@@ -259,7 +259,7 @@ const swaggerSpec = {
     '/api/v1/ia/assessments/{assessmentId}/revisions': {
       post: {
         summary: 'Cria uma nova versao da avaliacao pela api-ia',
-        tags: ['API IA'],
+        tags: ['APIIA'],
         parameters: [
           {
             name: 'assessmentId',
