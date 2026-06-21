@@ -1,5 +1,31 @@
 const env = require('../config/env');
 
+const assessmentExample = {
+  subject: 'Ciencias',
+  gradeLevel: '6 ano',
+  classroomMaterial: 'A aula abordou o ciclo da agua, incluindo evaporacao, condensacao, precipitacao e infiltracao.',
+  assessmentType: 'prova',
+  questionCount: 10,
+  difficulty: 'medio',
+  teacherInstructions: 'Inclua duas questoes dissertativas.'
+};
+
+const assessmentResponseExample = {
+  data: {
+    id: 'uuid',
+    currentVersion: {
+      version: 1,
+      assessment: {
+        title: 'Avaliacao de Ciencias',
+        instructions: 'Leia com atencao.',
+        questions: [],
+        answerKey: []
+      }
+    },
+    versions: []
+  }
+};
+
 const swaggerSpec = {
   openapi: '3.0.3',
   info: {
@@ -21,6 +47,10 @@ const swaggerSpec = {
     {
       name: 'Usuarios',
       description: 'Rotas agregadas para usuarios'
+    },
+    {
+      name: 'API IA',
+      description: 'Rotas do BFF para consumir a api-ia'
     }
   ],
   paths: {
@@ -112,6 +142,175 @@ const swaggerSpec = {
           }
         }
       }
+    },
+    '/api/v1/ia/health': {
+      get: {
+        summary: 'Verifica a saude da api-ia pelo BFF',
+        tags: ['API IA'],
+        description: `Encaminha a chamada para ${env.apiIaBaseUrl}/api/v1/health.`,
+        responses: {
+          200: {
+            description: 'api-ia disponivel',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/HealthResponse'
+                }
+              }
+            }
+          },
+          502: {
+            description: 'Falha ao consultar a api-ia',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/ErrorResponse'
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    '/api/v1/ia/assessments': {
+      post: {
+        summary: 'Cria uma avaliacao escolar pela api-ia',
+        tags: ['API IA'],
+        description: 'O frontend deve consumir esta rota do BFF. O BFF encaminha Origin/Referer para a api-ia.',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                $ref: '#/components/schemas/CreateAssessmentRequest'
+              },
+              example: assessmentExample
+            }
+          }
+        },
+        responses: {
+          200: {
+            description: 'Avaliacao criada',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/AssessmentResponse'
+                },
+                example: assessmentResponseExample
+              }
+            }
+          },
+          502: {
+            description: 'Falha ao consultar a api-ia',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/ErrorResponse'
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    '/api/v1/ia/assessments/{assessmentId}': {
+      get: {
+        summary: 'Busca uma avaliacao salva pela api-ia',
+        tags: ['API IA'],
+        parameters: [
+          {
+            name: 'assessmentId',
+            in: 'path',
+            required: true,
+            schema: {
+              type: 'string',
+              format: 'uuid'
+            }
+          }
+        ],
+        responses: {
+          200: {
+            description: 'Avaliacao salva, versao atual e historico',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/AssessmentResponse'
+                },
+                example: assessmentResponseExample
+              }
+            }
+          },
+          404: {
+            description: 'Avaliacao nao encontrada'
+          },
+          502: {
+            description: 'Falha ao consultar a api-ia',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/ErrorResponse'
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    '/api/v1/ia/assessments/{assessmentId}/revisions': {
+      post: {
+        summary: 'Cria uma nova versao da avaliacao pela api-ia',
+        tags: ['API IA'],
+        parameters: [
+          {
+            name: 'assessmentId',
+            in: 'path',
+            required: true,
+            schema: {
+              type: 'string',
+              format: 'uuid'
+            }
+          }
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                $ref: '#/components/schemas/CreateAssessmentRevisionRequest'
+              },
+              example: {
+                adjustmentRequest: 'Troque a questao 2 aberta por uma questao de multipla escolha.'
+              }
+            }
+          }
+        },
+        responses: {
+          200: {
+            description: 'Nova versao criada',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/AssessmentResponse'
+                },
+                example: assessmentResponseExample
+              }
+            }
+          },
+          404: {
+            description: 'Avaliacao nao encontrada'
+          },
+          502: {
+            description: 'Falha ao consultar a api-ia',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/ErrorResponse'
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   components: {
@@ -164,6 +363,87 @@ const swaggerSpec = {
           id: { type: 'string', example: 'me' },
           authenticated: { type: 'boolean', example: true },
           tokenPreview: { type: 'string', example: 'eyJhbGci...' }
+        }
+      },
+      CreateAssessmentRequest: {
+        type: 'object',
+        required: [
+          'subject',
+          'gradeLevel',
+          'classroomMaterial',
+          'assessmentType',
+          'questionCount',
+          'difficulty'
+        ],
+        properties: {
+          subject: { type: 'string', example: assessmentExample.subject },
+          gradeLevel: { type: 'string', example: assessmentExample.gradeLevel },
+          classroomMaterial: { type: 'string', example: assessmentExample.classroomMaterial },
+          assessmentType: { type: 'string', example: assessmentExample.assessmentType },
+          questionCount: { type: 'integer', example: assessmentExample.questionCount },
+          difficulty: { type: 'string', example: assessmentExample.difficulty },
+          teacherInstructions: { type: 'string', example: assessmentExample.teacherInstructions }
+        }
+      },
+      CreateAssessmentRevisionRequest: {
+        type: 'object',
+        required: ['adjustmentRequest'],
+        properties: {
+          adjustmentRequest: {
+            type: 'string',
+            example: 'Troque a questao 2 aberta por uma questao de multipla escolha.'
+          }
+        }
+      },
+      AssessmentResponse: {
+        type: 'object',
+        properties: {
+          data: {
+            type: 'object',
+            properties: {
+              id: {
+                type: 'string',
+                format: 'uuid'
+              },
+              currentVersion: {
+                $ref: '#/components/schemas/AssessmentVersion'
+              },
+              versions: {
+                type: 'array',
+                items: {
+                  $ref: '#/components/schemas/AssessmentVersion'
+                }
+              }
+            }
+          }
+        }
+      },
+      AssessmentVersion: {
+        type: 'object',
+        properties: {
+          version: {
+            type: 'integer',
+            example: 1
+          },
+          assessment: {
+            type: 'object',
+            properties: {
+              title: { type: 'string', example: 'Avaliacao de Ciencias' },
+              instructions: { type: 'string', example: 'Leia com atencao.' },
+              questions: {
+                type: 'array',
+                items: {
+                  type: 'object'
+                }
+              },
+              answerKey: {
+                type: 'array',
+                items: {
+                  type: 'object'
+                }
+              }
+            }
+          }
         }
       }
     }

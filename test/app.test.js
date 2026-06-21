@@ -39,6 +39,8 @@ describe('BFF API', () => {
     assert.equal(response.status, 200);
     assert.equal(body.openapi, '3.0.3');
     assert.ok(body.paths['/api/v1/health']);
+    assert.ok(body.paths['/api/v1/ia/assessments']);
+    assert.ok(body.paths['/api/v1/ia/assessments/{assessmentId}/revisions']);
   });
 
   it('protects the authenticated user route', async () => {
