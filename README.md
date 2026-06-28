@@ -61,6 +61,14 @@ BFF_PUBLIC_URL=https://bff-khora.onrender.com
 - `POST /api/v1/turma/classrooms` - cria uma turma
 - `GET /api/v1/turma/classrooms` - lista turmas
 
+### Regra de negocio da API Auth
+
+- `POST /api/v1/auth/user` aceita `person` opcional com `cpf`, `name`, `birth` e `email`.
+- Quando `person` e informado, a API Auth cria o registro complementar e vincula em `person.user_id = user.id`.
+- `POST /api/v1/auth/user/signin` retorna `token`, `role` e `user`.
+- O `role` retornado prioriza `person.role` quando houver pessoa vinculada; caso contrario usa `user.role`.
+- `GET /api/v1/auth/user/:id` faz a consulta autenticada com Bearer token.
+
 ## Docker
 
 ```bash
