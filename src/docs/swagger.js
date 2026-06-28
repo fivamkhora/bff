@@ -36,6 +36,23 @@ const classroomExample = {
   updatedAt: '2026-06-28T00:00:00.000Z'
 };
 
+const authUserExample = {
+  id: 1,
+  username: 'maria',
+  role: 'Aluno'
+};
+
+const authUserDetailsExample = {
+  id: 1,
+  username: 'maria',
+  role: 'Aluno',
+  cpf: '00000000000',
+  name: 'Maria',
+  birth: '2000-01-01',
+  email: 'maria@example.com',
+  user_id: 1
+};
+
 const swaggerSpec = {
   openapi: '3.0.3',
   info: {
@@ -57,6 +74,10 @@ const swaggerSpec = {
     {
       name: 'Usuarios',
       description: 'Rotas agregadas para usuarios'
+    },
+    {
+      name: 'APIAUTH',
+      description: 'Rotas do BFF para consumir a API Auth'
     },
     {
       name: 'APIIA',
@@ -146,6 +167,189 @@ const swaggerSpec = {
           },
           401: {
             description: 'Token nao informado',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/ErrorResponse'
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    '/api/v1/auth/user': {
+      post: {
+        summary: 'Cria um usuario pela API Auth',
+        tags: ['APIAUTH'],
+        description: `Encaminha a chamada para ${env.apiAuthBaseUrl}/user.`,
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                $ref: '#/components/schemas/CreateAuthUserRequest'
+              },
+              example: {
+                username: 'maria',
+                password: '123456',
+                role: 'Aluno'
+              }
+            }
+          }
+        },
+        responses: {
+          201: {
+            description: 'Usuario criado',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/AuthUser'
+                },
+                example: authUserExample
+              }
+            }
+          },
+          400: {
+            description: 'Erro de validacao',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/AuthErrorResponse'
+                }
+              }
+            }
+          },
+          502: {
+            description: 'Falha ao consultar a API Auth',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/ErrorResponse'
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    '/api/v1/auth/user/signin': {
+      post: {
+        summary: 'Autentica usuario pela API Auth',
+        tags: ['APIAUTH'],
+        description: `Encaminha a chamada para ${env.apiAuthBaseUrl}/user/signin e retorna o JWT.`,
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                $ref: '#/components/schemas/AuthSigninRequest'
+              },
+              example: {
+                username: 'maria',
+                password: '123456'
+              }
+            }
+          }
+        },
+        responses: {
+          200: {
+            description: 'Login efetuado',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/AuthSigninResponse'
+                },
+                example: {
+                  token: '<jwt>',
+                  role: 'Aluno'
+                }
+              }
+            }
+          },
+          401: {
+            description: 'Credenciais invalidas',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/AuthErrorResponse'
+                },
+                example: {
+                  message: 'Username or password is incorrect'
+                }
+              }
+            }
+          },
+          502: {
+            description: 'Falha ao consultar a API Auth',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/ErrorResponse'
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    '/api/v1/auth/user/{id}': {
+      get: {
+        summary: 'Busca usuario por ID pela API Auth',
+        tags: ['APIAUTH'],
+        security: [{ bearerAuth: [] }],
+        description: 'Rota privada. Envie Authorization: Bearer <token>.',
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: {
+              type: 'integer',
+              example: 1
+            }
+          }
+        ],
+        responses: {
+          200: {
+            description: 'Usuario encontrado',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/AuthUserDetails'
+                },
+                example: authUserDetailsExample
+              }
+            }
+          },
+          401: {
+            description: 'Token ausente ou invalido',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/AuthErrorResponse'
+                },
+                example: {
+                  message: 'Unauthorized'
+                }
+              }
+            }
+          },
+          404: {
+            description: 'Usuario nao encontrado',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/AuthErrorResponse'
+                },
+                example: {
+                  message: 'Resource not found'
+                }
+              }
+            }
+          },
+          502: {
+            description: 'Falha ao consultar a API Auth',
             content: {
               'application/json': {
                 schema: {
@@ -497,6 +701,132 @@ const swaggerSpec = {
           id: { type: 'string', example: 'me' },
           authenticated: { type: 'boolean', example: true },
           tokenPreview: { type: 'string', example: 'eyJhbGci...' }
+        }
+      },
+      AuthErrorResponse: {
+        type: 'object',
+        properties: {
+          message: {
+            type: 'string',
+            example: 'Unauthorized'
+          },
+          issues: {
+            type: 'object',
+            nullable: true,
+            additionalProperties: {
+              type: 'array',
+              items: {
+                type: 'string'
+              }
+            }
+          }
+        }
+      },
+      CreateAuthUserRequest: {
+        type: 'object',
+        required: ['username', 'password', 'role'],
+        properties: {
+          username: {
+            type: 'string',
+            example: 'maria'
+          },
+          password: {
+            type: 'string',
+            format: 'password',
+            example: '123456'
+          },
+          role: {
+            type: 'string',
+            enum: ['Aluno', 'Professor'],
+            example: 'Aluno'
+          }
+        }
+      },
+      AuthSigninRequest: {
+        type: 'object',
+        required: ['username', 'password'],
+        properties: {
+          username: {
+            type: 'string',
+            example: 'maria'
+          },
+          password: {
+            type: 'string',
+            format: 'password',
+            example: '123456'
+          }
+        }
+      },
+      AuthSigninResponse: {
+        type: 'object',
+        properties: {
+          token: {
+            type: 'string',
+            example: '<jwt>'
+          },
+          role: {
+            type: 'string',
+            enum: ['Aluno', 'Professor'],
+            example: 'Aluno'
+          }
+        }
+      },
+      AuthUser: {
+        type: 'object',
+        properties: {
+          id: {
+            type: 'integer',
+            example: authUserExample.id
+          },
+          username: {
+            type: 'string',
+            example: authUserExample.username
+          },
+          role: {
+            type: 'string',
+            enum: ['Aluno', 'Professor'],
+            example: authUserExample.role
+          }
+        }
+      },
+      AuthUserDetails: {
+        type: 'object',
+        properties: {
+          id: {
+            type: 'integer',
+            example: authUserDetailsExample.id
+          },
+          username: {
+            type: 'string',
+            example: authUserDetailsExample.username
+          },
+          role: {
+            type: 'string',
+            enum: ['Aluno', 'Professor'],
+            example: authUserDetailsExample.role
+          },
+          cpf: {
+            type: 'string',
+            example: authUserDetailsExample.cpf
+          },
+          name: {
+            type: 'string',
+            example: authUserDetailsExample.name
+          },
+          birth: {
+            type: 'string',
+            format: 'date',
+            example: authUserDetailsExample.birth
+          },
+          email: {
+            type: 'string',
+            format: 'email',
+            example: authUserDetailsExample.email
+          },
+          user_id: {
+            type: 'integer',
+            example: authUserDetailsExample.user_id
+          }
         }
       },
       CreateAssessmentRequest: {

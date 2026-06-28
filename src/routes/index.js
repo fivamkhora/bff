@@ -1,5 +1,6 @@
 const { Router } = require('express');
 
+const authRouter = require('./auth.routes');
 const healthRouter = require('./health.routes');
 const iaRouter = require('./ia.routes');
 const statusRouter = require('./status.routes');
@@ -8,6 +9,7 @@ const usersRouter = require('./users.routes');
 
 const apiRouter = Router();
 
+apiRouter.use('/auth', authRouter);
 apiRouter.use('/health', healthRouter);
 apiRouter.use('/ia', iaRouter);
 apiRouter.use('/status', statusRouter);

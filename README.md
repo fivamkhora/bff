@@ -38,6 +38,7 @@ PORT=3000
 NODE_ENV=development
 CORS_ORIGIN=*
 API_VERSION=1.0.0
+API_AUTH_BASE_URL=https://api-auth-khora.onrender.com
 API_IA_BASE_URL=https://api-ia-khora.onrender.com
 API_TURMA_BASE_URL=https://api-turma-khora.onrender.com
 BFF_PUBLIC_URL=https://bff-khora.onrender.com
@@ -49,6 +50,9 @@ BFF_PUBLIC_URL=https://bff-khora.onrender.com
 - `GET /api/v1/health` - health check
 - `GET /api/v1/status` - status do BFF
 - `GET /api/v1/users/me` - exemplo de rota protegida por Bearer token
+- `POST /api/v1/auth/user` - cria um usuario
+- `POST /api/v1/auth/user/signin` - autentica usuario e retorna JWT
+- `GET /api/v1/auth/user/:id` - busca usuario por ID com Bearer token
 - `GET /api/v1/ia/health` - health check da API de IA
 - `POST /api/v1/ia/assessments` - cria uma avaliacao escolar
 - `GET /api/v1/ia/assessments/:assessmentId` - busca uma avaliacao salva

@@ -39,6 +39,9 @@ describe('BFF API', () => {
     assert.equal(response.status, 200);
     assert.equal(body.openapi, '3.0.3');
     assert.ok(body.paths['/api/v1/health']);
+    assert.ok(body.paths['/api/v1/auth/user']);
+    assert.ok(body.paths['/api/v1/auth/user/signin']);
+    assert.ok(body.paths['/api/v1/auth/user/{id}']);
     assert.ok(body.paths['/api/v1/ia/assessments']);
     assert.ok(body.paths['/api/v1/ia/assessments/{assessmentId}/revisions']);
     assert.ok(body.paths['/api/v1/turma/health']);
