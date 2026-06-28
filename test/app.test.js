@@ -41,6 +41,8 @@ describe('BFF API', () => {
     assert.ok(body.paths['/api/v1/health']);
     assert.ok(body.paths['/api/v1/ia/assessments']);
     assert.ok(body.paths['/api/v1/ia/assessments/{assessmentId}/revisions']);
+    assert.ok(body.paths['/api/v1/turma/health']);
+    assert.ok(body.paths['/api/v1/turma/classrooms']);
   });
 
   it('protects the authenticated user route', async () => {

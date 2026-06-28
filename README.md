@@ -39,6 +39,7 @@ NODE_ENV=development
 CORS_ORIGIN=*
 API_VERSION=1.0.0
 API_IA_BASE_URL=https://api-ia-khora.onrender.com
+API_TURMA_BASE_URL=https://api-turma-khora.onrender.com
 BFF_PUBLIC_URL=https://bff-khora.onrender.com
 ```
 
@@ -52,6 +53,9 @@ BFF_PUBLIC_URL=https://bff-khora.onrender.com
 - `POST /api/v1/ia/assessments` - cria uma avaliacao escolar
 - `GET /api/v1/ia/assessments/:assessmentId` - busca uma avaliacao salva
 - `POST /api/v1/ia/assessments/:assessmentId/revisions` - cria uma revisao da avaliacao
+- `GET /api/v1/turma/health` - health check da API Turma
+- `POST /api/v1/turma/classrooms` - cria uma turma
+- `GET /api/v1/turma/classrooms` - lista turmas
 
 ## Docker
 

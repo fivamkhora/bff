@@ -26,6 +26,16 @@ const assessmentResponseExample = {
   }
 };
 
+const classroomExample = {
+  id: 'uuid-da-turma',
+  name: 'Turma 1A',
+  code: 'TURMA-ABC123',
+  schoolYear: '2026',
+  teacherId: 1,
+  createdAt: '2026-06-28T00:00:00.000Z',
+  updatedAt: '2026-06-28T00:00:00.000Z'
+};
+
 const swaggerSpec = {
   openapi: '3.0.3',
   info: {
@@ -51,6 +61,10 @@ const swaggerSpec = {
     {
       name: 'APIIA',
       description: 'Rotas do BFF para consumir a api-ia'
+    },
+    {
+      name: 'APITURMA',
+      description: 'Rotas do BFF para consumir a API Turma'
     }
   ],
   paths: {
@@ -311,6 +325,126 @@ const swaggerSpec = {
           }
         }
       }
+    },
+    '/api/v1/turma/health': {
+      get: {
+        summary: 'Verifica a saude da API Turma pelo BFF',
+        tags: ['APITURMA'],
+        description: `Encaminha a chamada para ${env.apiTurmaBaseUrl}/.`,
+        responses: {
+          200: {
+            description: 'API Turma disponivel',
+            content: {
+              'text/plain': {
+                schema: {
+                  type: 'string',
+                  example: 'Hello World!'
+                }
+              }
+            }
+          },
+          502: {
+            description: 'Falha ao consultar a API Turma',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/ErrorResponse'
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    '/api/v1/turma/classrooms': {
+      post: {
+        summary: 'Cria uma turma pela API Turma',
+        tags: ['APITURMA'],
+        description: 'O frontend deve consumir esta rota do BFF. O BFF encaminha a chamada para a API Turma.',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                $ref: '#/components/schemas/CreateClassroomRequest'
+              },
+              example: {
+                name: 'Turma 1A',
+                schoolYear: '2026',
+                teacherId: 1
+              }
+            }
+          }
+        },
+        responses: {
+          201: {
+            description: 'Turma criada',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/Classroom'
+                },
+                example: classroomExample
+              }
+            }
+          },
+          200: {
+            description: 'Turma criada',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/Classroom'
+                },
+                example: classroomExample
+              }
+            }
+          },
+          400: {
+            description: 'Dados invalidos'
+          },
+          502: {
+            description: 'Falha ao consultar a API Turma',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/ErrorResponse'
+                }
+              }
+            }
+          }
+        }
+      },
+      get: {
+        summary: 'Lista turmas pela API Turma',
+        tags: ['APITURMA'],
+        description: 'Encaminha a chamada para a listagem de turmas da API Turma.',
+        responses: {
+          200: {
+            description: 'Lista de turmas',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'array',
+                  items: {
+                    $ref: '#/components/schemas/Classroom'
+                  }
+                },
+                example: [classroomExample]
+              }
+            }
+          },
+          502: {
+            description: 'Falha ao consultar a API Turma',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/ErrorResponse'
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   components: {
@@ -392,6 +526,60 @@ const swaggerSpec = {
           adjustmentRequest: {
             type: 'string',
             example: 'Troque a questao 2 aberta por uma questao de multipla escolha.'
+          }
+        }
+      },
+      CreateClassroomRequest: {
+        type: 'object',
+        required: ['name', 'schoolYear', 'teacherId'],
+        properties: {
+          name: {
+            type: 'string',
+            example: 'Turma 1A'
+          },
+          schoolYear: {
+            type: 'string',
+            example: '2026'
+          },
+          teacherId: {
+            type: 'number',
+            example: 1
+          }
+        }
+      },
+      Classroom: {
+        type: 'object',
+        properties: {
+          id: {
+            type: 'string',
+            format: 'uuid',
+            example: classroomExample.id
+          },
+          name: {
+            type: 'string',
+            example: classroomExample.name
+          },
+          code: {
+            type: 'string',
+            example: classroomExample.code
+          },
+          schoolYear: {
+            type: 'string',
+            example: classroomExample.schoolYear
+          },
+          teacherId: {
+            type: 'number',
+            example: classroomExample.teacherId
+          },
+          createdAt: {
+            type: 'string',
+            format: 'date-time',
+            example: classroomExample.createdAt
+          },
+          updatedAt: {
+            type: 'string',
+            format: 'date-time',
+            example: classroomExample.updatedAt
           }
         }
       },
