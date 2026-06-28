@@ -6,6 +6,23 @@ function buildApiIaUrl(path) {
   return new URL(path, env.apiIaBaseUrl).toString();
 }
 
+function buildApiIaUrlWithQuery(path, query) {
+  const url = new URL(path, env.apiIaBaseUrl);
+
+  Object.entries(query ?? {}).forEach(([key, value]) => {
+    if (Array.isArray(value)) {
+      value.forEach((item) => url.searchParams.append(key, item));
+      return;
+    }
+
+    if (value !== undefined) {
+      url.searchParams.append(key, value);
+    }
+  });
+
+  return url.toString();
+}
+
 function buildForwardHeaders(req) {
   const headers = {
     accept: JSON_CONTENT_TYPE,
@@ -29,7 +46,11 @@ function buildForwardHeaders(req) {
 
 async function proxyApiIaRequest(req, res, next, options) {
   try {
-    const response = await fetch(buildApiIaUrl(options.path), {
+    const url = options.forwardQuery
+      ? buildApiIaUrlWithQuery(options.path, req.query)
+      : buildApiIaUrl(options.path);
+
+    const response = await fetch(url, {
       method: options.method,
       headers: buildForwardHeaders(req),
       body: options.method === 'GET' ? undefined : JSON.stringify(req.body ?? {})

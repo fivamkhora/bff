@@ -414,7 +414,7 @@ const swaggerSpec = {
       post: {
         summary: 'Cria uma avaliacao escolar pela api-ia',
         tags: ['APIIA'],
-        description: 'O frontend deve consumir esta rota do BFF. O BFF encaminha Origin/Referer para a api-ia.',
+        description: 'Cria uma avaliacao a partir do material da aula, gera a versao inicial com IA e salva em PostgreSQL. A api-ia usa assessments para os dados originais e assessment_versions para cada versao gerada ou revisada.',
         requestBody: {
           required: true,
           content: {
@@ -449,37 +449,80 @@ const swaggerSpec = {
             }
           }
         }
-      }
-    },
-    '/api/v1/ia/assessments/{assessmentId}': {
+      },
       get: {
-        summary: 'Busca uma avaliacao salva pela api-ia',
+        summary: 'Lista avaliacoes salvas pela api-ia',
         tags: ['APIIA'],
+        description: 'Lista avaliacoes persistidas. Sem query params, retorna todas. Para buscar por identificador, envie assessmentId como query param.',
         parameters: [
           {
+            name: 'subject',
+            in: 'query',
+            required: false,
+            schema: { type: 'string' },
+            example: 'Ciencias'
+          },
+          {
+            name: 'gradeLevel',
+            in: 'query',
+            required: false,
+            schema: { type: 'string' },
+            example: '6 ano'
+          },
+          {
+            name: 'classroomMaterial',
+            in: 'query',
+            required: false,
+            schema: { type: 'string' }
+          },
+          {
+            name: 'assessmentType',
+            in: 'query',
+            required: false,
+            schema: { type: 'string' },
+            example: 'prova'
+          },
+          {
             name: 'assessmentId',
-            in: 'path',
-            required: true,
-            schema: {
-              type: 'string',
-              format: 'uuid'
-            }
+            in: 'query',
+            required: false,
+            schema: { type: 'string', format: 'uuid' },
+            example: 'uuid'
+          },
+          {
+            name: 'questionCount',
+            in: 'query',
+            required: false,
+            schema: { type: 'integer' },
+            example: 10
+          },
+          {
+            name: 'difficulty',
+            in: 'query',
+            required: false,
+            schema: { type: 'string' },
+            example: 'medio'
+          },
+          {
+            name: 'teacherInstructions',
+            in: 'query',
+            required: false,
+            schema: { type: 'string' }
           }
         ],
         responses: {
           200: {
-            description: 'Avaliacao salva, versao atual e historico',
+            description: 'Lista de avaliacoes salvas',
             content: {
               'application/json': {
                 schema: {
-                  $ref: '#/components/schemas/AssessmentResponse'
+                  $ref: '#/components/schemas/AssessmentListResponse'
                 },
-                example: assessmentResponseExample
+                example: {
+                  data: [assessmentResponseExample.data]
+                }
               }
             }
-          },
-          404: {
-            description: 'Avaliacao nao encontrada'
           },
           502: {
             description: 'Falha ao consultar a api-ia',
@@ -498,6 +541,7 @@ const swaggerSpec = {
       post: {
         summary: 'Cria uma nova versao da avaliacao pela api-ia',
         tags: ['APIIA'],
+        description: 'Cria uma nova versao a partir do material original da aula, da avaliacao atual e do pedido de ajuste do professor. A nova versao e salva no historico.',
         parameters: [
           {
             name: 'assessmentId',
@@ -1038,6 +1082,32 @@ const swaggerSpec = {
                 type: 'array',
                 items: {
                   $ref: '#/components/schemas/AssessmentVersion'
+                }
+              }
+            }
+          }
+        }
+      },
+      AssessmentListResponse: {
+        type: 'object',
+        properties: {
+          data: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                id: {
+                  type: 'string',
+                  format: 'uuid'
+                },
+                currentVersion: {
+                  $ref: '#/components/schemas/AssessmentVersion'
+                },
+                versions: {
+                  type: 'array',
+                  items: {
+                    $ref: '#/components/schemas/AssessmentVersion'
+                  }
                 }
               }
             }

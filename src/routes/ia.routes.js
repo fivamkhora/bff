@@ -18,10 +18,11 @@ iaRouter.post('/assessments', (req, res, next) => {
   });
 });
 
-iaRouter.get('/assessments/:assessmentId', (req, res, next) => {
+iaRouter.get('/assessments', (req, res, next) => {
   proxyApiIaRequest(req, res, next, {
     method: 'GET',
-    path: `/api/v1/assessments/${encodeURIComponent(req.params.assessmentId)}`
+    path: '/api/v1/assessments',
+    forwardQuery: true
   });
 });
 

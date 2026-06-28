@@ -55,11 +55,20 @@ BFF_PUBLIC_URL=https://bff-khora.onrender.com
 - `GET /api/v1/auth/user/:id` - busca usuario por ID com Bearer token
 - `GET /api/v1/ia/health` - health check da API de IA
 - `POST /api/v1/ia/assessments` - cria uma avaliacao escolar
-- `GET /api/v1/ia/assessments/:assessmentId` - busca uma avaliacao salva
+- `GET /api/v1/ia/assessments` - lista avaliacoes salvas com filtros opcionais
 - `POST /api/v1/ia/assessments/:assessmentId/revisions` - cria uma revisao da avaliacao
 - `GET /api/v1/turma/health` - health check da API Turma
 - `POST /api/v1/turma/classrooms` - cria uma turma
 - `GET /api/v1/turma/classrooms` - lista turmas
+
+### Regra de negocio da API IA
+
+- `POST /api/v1/ia/assessments` cria uma avaliacao a partir do material usado em aula e salva a versao inicial.
+- A API IA persiste os dados originais em `assessments` e cada versao gerada ou revisada em `assessment_versions`.
+- `GET /api/v1/ia/assessments` lista as avaliacoes salvas. Sem query params, retorna todas.
+- A listagem aceita filtros opcionais: `subject`, `gradeLevel`, `classroomMaterial`, `assessmentType`, `assessmentId`, `questionCount`, `difficulty` e `teacherInstructions`.
+- Para buscar por identificador, use `GET /api/v1/ia/assessments?assessmentId=uuid`.
+- `POST /api/v1/ia/assessments/:assessmentId/revisions` cria nova versao usando o material original, a avaliacao atual e o pedido de ajuste do professor.
 
 ### Regra de negocio da API Auth
 

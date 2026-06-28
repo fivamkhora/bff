@@ -43,6 +43,7 @@ describe('BFF API', () => {
     assert.ok(body.paths['/api/v1/auth/user/signin']);
     assert.ok(body.paths['/api/v1/auth/user/{id}']);
     assert.ok(body.paths['/api/v1/ia/assessments']);
+    assert.ok(body.paths['/api/v1/ia/assessments'].get);
     assert.ok(body.paths['/api/v1/ia/assessments/{assessmentId}/revisions']);
     assert.ok(body.paths['/api/v1/turma/health']);
     assert.ok(body.paths['/api/v1/turma/classrooms']);
