@@ -65,9 +65,9 @@ BFF_PUBLIC_URL=https://bff-khora.onrender.com
 
 - `POST /api/v1/ia/assessments` cria uma avaliacao a partir do material usado em aula e salva a versao inicial.
 - A API IA persiste os dados originais em `assessments` e cada versao gerada ou revisada em `assessment_versions`.
-- `GET /api/v1/ia/assessments` lista as avaliacoes salvas. Sem query params, retorna todas.
+- `GET /api/v1/ia/assessments` lista as avaliacoes salvas. Sem query params, retorna todas (`all`).
 - A listagem aceita filtros opcionais: `subject`, `gradeLevel`, `classroomMaterial`, `assessmentType`, `assessmentId`, `questionCount`, `difficulty` e `teacherInstructions`.
-- Para buscar por identificador, use `GET /api/v1/ia/assessments?assessmentId=uuid`.
+- `assessmentId` nao e obrigatorio; use `GET /api/v1/ia/assessments?assessmentId=uuid` somente quando quiser buscar por identificador.
 - `POST /api/v1/ia/assessments/:assessmentId/revisions` cria nova versao usando o material original, a avaliacao atual e o pedido de ajuste do professor.
 
 ### Regra de negocio da API Auth

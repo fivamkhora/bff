@@ -451,14 +451,15 @@ const swaggerSpec = {
         }
       },
       get: {
-        summary: 'Lista avaliacoes salvas pela api-ia',
+        summary: 'Lista todas as avaliacoes ou filtra resultados pela api-ia',
         tags: ['APIIA'],
-        description: 'Lista avaliacoes persistidas. Sem query params, retorna todas. Para buscar por identificador, envie assessmentId como query param.',
+        description: 'Todos os query params sao opcionais. Sem filtros, retorna todas as avaliacoes salvas. Envie um ou mais filtros somente quando quiser restringir a busca.',
         parameters: [
           {
             name: 'subject',
             in: 'query',
             required: false,
+            description: 'Filtro opcional por disciplina.',
             schema: { type: 'string' },
             example: 'Ciencias'
           },
@@ -466,6 +467,7 @@ const swaggerSpec = {
             name: 'gradeLevel',
             in: 'query',
             required: false,
+            description: 'Filtro opcional por serie ou ano escolar.',
             schema: { type: 'string' },
             example: '6 ano'
           },
@@ -473,12 +475,14 @@ const swaggerSpec = {
             name: 'classroomMaterial',
             in: 'query',
             required: false,
+            description: 'Filtro opcional pelo material usado em aula.',
             schema: { type: 'string' }
           },
           {
             name: 'assessmentType',
             in: 'query',
             required: false,
+            description: 'Filtro opcional por tipo de avaliacao.',
             schema: { type: 'string' },
             example: 'prova'
           },
@@ -486,13 +490,15 @@ const swaggerSpec = {
             name: 'assessmentId',
             in: 'query',
             required: false,
-            schema: { type: 'string', format: 'uuid' },
+            description: 'Filtro opcional por identificador. Deixe vazio para listar todas ou combine com outros filtros.',
+            schema: { type: 'string' },
             example: 'uuid'
           },
           {
             name: 'questionCount',
             in: 'query',
             required: false,
+            description: 'Filtro opcional pela quantidade de questoes.',
             schema: { type: 'integer' },
             example: 10
           },
@@ -500,6 +506,7 @@ const swaggerSpec = {
             name: 'difficulty',
             in: 'query',
             required: false,
+            description: 'Filtro opcional por dificuldade.',
             schema: { type: 'string' },
             example: 'medio'
           },
@@ -507,6 +514,7 @@ const swaggerSpec = {
             name: 'teacherInstructions',
             in: 'query',
             required: false,
+            description: 'Filtro opcional pelas instrucoes do professor.',
             schema: { type: 'string' }
           }
         ],
