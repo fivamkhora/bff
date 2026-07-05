@@ -58,6 +58,14 @@ const authUserDetailsExample = {
   user_id: 1
 };
 
+const authWhoamiExample = {
+  id: 1,
+  username: 'maria',
+  name: 'Maria',
+  email: 'maria@example.com',
+  role: 'Aluno'
+};
+
 const swaggerSpec = {
   openapi: '3.0.3',
   info: {
@@ -285,6 +293,63 @@ const swaggerSpec = {
                 },
                 example: {
                   message: 'Username or password is incorrect'
+                }
+              }
+            }
+          },
+          502: {
+            description: 'Falha ao consultar a API Auth',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/ErrorResponse'
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    '/api/v1/auth/user/whoami': {
+      get: {
+        summary: 'Retorna o usuario autenticado pela API Auth',
+        tags: ['APIAUTH'],
+        security: [{ bearerAuth: [] }],
+        description: 'Rota privada. Envie Authorization: Bearer <token>. A API usa o sub do JWT para buscar o usuario autenticado.',
+        responses: {
+          200: {
+            description: 'Usuario autenticado',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/AuthWhoamiResponse'
+                },
+                example: authWhoamiExample
+              }
+            }
+          },
+          401: {
+            description: 'Token ausente ou invalido',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/AuthErrorResponse'
+                },
+                example: {
+                  message: 'Unauthorized'
+                }
+              }
+            }
+          },
+          404: {
+            description: 'Usuario nao encontrado',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/AuthErrorResponse'
+                },
+                example: {
+                  message: 'Resource not found'
                 }
               }
             }
@@ -857,6 +922,33 @@ const swaggerSpec = {
             type: 'string',
             enum: ['Aluno', 'Professor'],
             example: 'Aluno'
+          }
+        }
+      },
+      AuthWhoamiResponse: {
+        type: 'object',
+        properties: {
+          id: {
+            type: 'integer',
+            example: authWhoamiExample.id
+          },
+          username: {
+            type: 'string',
+            example: authWhoamiExample.username
+          },
+          name: {
+            type: 'string',
+            example: authWhoamiExample.name
+          },
+          email: {
+            type: 'string',
+            format: 'email',
+            example: authWhoamiExample.email
+          },
+          role: {
+            type: 'string',
+            enum: ['Aluno', 'Professor'],
+            example: authWhoamiExample.role
           }
         }
       },
