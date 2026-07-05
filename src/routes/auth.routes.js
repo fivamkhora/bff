@@ -18,10 +18,10 @@ authRouter.post('/user/signin', (req, res, next) => {
   });
 });
 
-authRouter.get('/user/:id', (req, res, next) => {
+authRouter.get('/user/:identifier', (req, res, next) => {
   proxyApiAuthRequest(req, res, next, {
     method: 'GET',
-    path: `/user/${encodeURIComponent(req.params.id)}`
+    path: `/user/${encodeURIComponent(req.params.identifier)}`
   });
 });
 

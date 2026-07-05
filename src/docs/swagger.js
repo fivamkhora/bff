@@ -187,7 +187,7 @@ const swaggerSpec = {
       post: {
         summary: 'Cria um usuario pela API Auth',
         tags: ['APIAUTH'],
-        description: 'Cria um usuario com senha criptografada. O objeto person e opcional; quando informado, a API cria o registro complementar e vincula com person.user_id = user.id.',
+        description: 'Cria um usuario com senha criptografada e cria tambem um registro em person, vinculando person.user_id = user.id. name e email sao obrigatorios; cpf e birth sao opcionais.',
         requestBody: {
           required: true,
           content: {
@@ -199,12 +199,10 @@ const swaggerSpec = {
                 username: 'maria',
                 password: '123456',
                 role: 'Aluno',
-                person: {
-                  cpf: '00000000000',
-                  name: 'Maria',
-                  birth: '2000-01-01',
-                  email: 'maria@example.com'
-                }
+                name: 'Maria',
+                email: 'maria@example.com',
+                cpf: '00000000000',
+                birth: '2000-01-01'
               }
             }
           }
@@ -248,7 +246,7 @@ const swaggerSpec = {
       post: {
         summary: 'Autentica usuario pela API Auth',
         tags: ['APIAUTH'],
-        description: 'Autentica com username e password. O campo role retornado usa person.role quando houver pessoa vinculada; caso contrario usa user.role.',
+        description: 'Autentica com username e password. Retorna JWT e role. O role retornado usa person.role quando houver pessoa vinculada; caso contrario usa user.role.',
         requestBody: {
           required: true,
           content: {
@@ -273,16 +271,7 @@ const swaggerSpec = {
                 },
                 example: {
                   token: '<jwt>',
-                  role: 'Aluno',
-                  user: {
-                    id: 1,
-                    username: 'maria',
-                    cpf: '00000000000',
-                    name: 'Maria',
-                    birth: '2000-01-01T00:00:00.000Z',
-                    email: 'maria@example.com',
-                    user_id: 1
-                  }
+                  role: 'Aluno'
                 }
               }
             }
@@ -313,30 +302,38 @@ const swaggerSpec = {
         }
       }
     },
-    '/api/v1/auth/user/{id}': {
+    '/api/v1/auth/user/{identifier}': {
       get: {
-        summary: 'Busca usuario por ID pela API Auth',
+        summary: 'Busca usuario por ID numerico ou nome parcial pela API Auth',
         tags: ['APIAUTH'],
         security: [{ bearerAuth: [] }],
-        description: 'Rota privada. Envie Authorization: Bearer <token>. A API faz LEFT JOIN entre user e person por person.user_id = user.id. Quando existe person, prioriza person.role; caso contrario, usa user.role.',
+        description: 'Rota privada. Envie Authorization: Bearer <token>. Quando identifier e numerico, busca por user.id. Quando e texto, busca por nome parcial em person.name e pode retornar uma lista. A API faz LEFT JOIN entre user e person por person.user_id = user.id.',
         parameters: [
           {
-            name: 'id',
+            name: 'identifier',
             in: 'path',
             required: true,
             schema: {
-              type: 'integer',
-              example: 1
+              type: 'string',
+              example: '1'
             }
           }
         ],
         responses: {
           200: {
-            description: 'Usuario encontrado',
+            description: 'Usuario encontrado por ID ou lista de usuarios por nome parcial',
             content: {
               'application/json': {
                 schema: {
-                  $ref: '#/components/schemas/AuthUserDetails'
+                  oneOf: [
+                    { $ref: '#/components/schemas/AuthUserDetails' },
+                    {
+                      type: 'array',
+                      items: {
+                        $ref: '#/components/schemas/AuthUserDetails'
+                      }
+                    }
+                  ]
                 },
                 example: authUserDetailsExample
               }
@@ -796,7 +793,7 @@ const swaggerSpec = {
       },
       CreateAuthUserRequest: {
         type: 'object',
-        required: ['username', 'password', 'role'],
+        required: ['username', 'password', 'role', 'name', 'email'],
         properties: {
           username: {
             type: 'string',
@@ -812,33 +809,25 @@ const swaggerSpec = {
             enum: ['Aluno', 'Professor'],
             example: 'Aluno'
           },
-          person: {
-            $ref: '#/components/schemas/AuthPersonInput'
-          }
-        }
-      },
-      AuthPersonInput: {
-        type: 'object',
-        description: 'Dados complementares opcionais da pessoa vinculada ao usuario.',
-        required: ['cpf', 'name', 'birth', 'email'],
-        properties: {
-          cpf: {
-            type: 'string',
-            example: '00000000000'
-          },
           name: {
             type: 'string',
             example: 'Maria'
-          },
-          birth: {
-            type: 'string',
-            format: 'date',
-            example: '2000-01-01'
           },
           email: {
             type: 'string',
             format: 'email',
             example: 'maria@example.com'
+          },
+          cpf: {
+            type: 'string',
+            nullable: true,
+            example: '00000000000'
+          },
+          birth: {
+            type: 'string',
+            format: 'date',
+            nullable: true,
+            example: '2000-01-01'
           }
         }
       },
@@ -868,44 +857,6 @@ const swaggerSpec = {
             type: 'string',
             enum: ['Aluno', 'Professor'],
             example: 'Aluno'
-          },
-          user: {
-            $ref: '#/components/schemas/AuthSigninUser'
-          }
-        }
-      },
-      AuthSigninUser: {
-        type: 'object',
-        properties: {
-          id: {
-            type: 'integer',
-            example: authUserDetailsExample.id
-          },
-          username: {
-            type: 'string',
-            example: authUserDetailsExample.username
-          },
-          cpf: {
-            type: 'string',
-            example: authUserDetailsExample.cpf
-          },
-          name: {
-            type: 'string',
-            example: authUserDetailsExample.name
-          },
-          birth: {
-            type: 'string',
-            format: 'date-time',
-            example: '2000-01-01T00:00:00.000Z'
-          },
-          email: {
-            type: 'string',
-            format: 'email',
-            example: authUserDetailsExample.email
-          },
-          user_id: {
-            type: 'integer',
-            example: authUserDetailsExample.user_id
           }
         }
       },

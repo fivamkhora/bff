@@ -52,7 +52,7 @@ BFF_PUBLIC_URL=https://bff-khora.onrender.com
 - `GET /api/v1/users/me` - exemplo de rota protegida por Bearer token
 - `POST /api/v1/auth/user` - cria um usuario
 - `POST /api/v1/auth/user/signin` - autentica usuario e retorna JWT
-- `GET /api/v1/auth/user/:id` - busca usuario por ID com Bearer token
+- `GET /api/v1/auth/user/:identifier` - busca usuario por ID numerico ou nome parcial com Bearer token
 - `GET /api/v1/ia/health` - health check da API de IA
 - `POST /api/v1/ia/assessments` - cria uma avaliacao escolar
 - `GET /api/v1/ia/assessments` - lista avaliacoes salvas com filtros opcionais
@@ -72,11 +72,13 @@ BFF_PUBLIC_URL=https://bff-khora.onrender.com
 
 ### Regra de negocio da API Auth
 
-- `POST /api/v1/auth/user` aceita `person` opcional com `cpf`, `name`, `birth` e `email`.
-- Quando `person` e informado, a API Auth cria o registro complementar e vincula em `person.user_id = user.id`.
-- `POST /api/v1/auth/user/signin` retorna `token`, `role` e `user`.
+- `POST /api/v1/auth/user` cria um registro em `user` e um registro em `person`, vinculando `person.user_id = user.id`.
+- Campos obrigatorios no cadastro: `username`, `password`, `role`, `name` e `email`.
+- Campos opcionais no cadastro: `cpf` e `birth`.
+- `POST /api/v1/auth/user/signin` retorna `token` e `role`.
 - O `role` retornado prioriza `person.role` quando houver pessoa vinculada; caso contrario usa `user.role`.
-- `GET /api/v1/auth/user/:id` faz a consulta autenticada com Bearer token.
+- `GET /api/v1/auth/user/:identifier` faz a consulta autenticada com Bearer token.
+- Quando `identifier` e numerico, a busca e por `user.id`; quando e texto, a busca e por nome parcial em `person.name`.
 
 ## Docker
 
