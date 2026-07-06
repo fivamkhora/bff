@@ -36,6 +36,14 @@ const classroomExample = {
   updatedAt: '2026-06-28T00:00:00.000Z'
 };
 
+const classroomMemberExample = {
+  id: 'uuid-do-vinculo',
+  classroomId: 'uuid-da-turma',
+  userId: 10,
+  role: 'Professor',
+  createdAt: '2026-07-05T00:00:00.000Z'
+};
+
 const authUserExample = {
   id: 1,
   username: 'maria',
@@ -783,6 +791,233 @@ const swaggerSpec = {
           }
         }
       }
+    },
+    '/api/v1/turma/classrooms/{id}/members': {
+      get: {
+        summary: 'Lista turmas por usuario vinculado pela API Turma',
+        tags: ['APITURMA'],
+        description: 'Encaminha a chamada para listar as turmas em que o usuario informado esta vinculado. O parametro id representa o userId numerico.',
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: {
+              type: 'number',
+              example: 10
+            },
+            description: 'Identificador numerico do usuario vinculado'
+          }
+        ],
+        responses: {
+          200: {
+            description: 'Lista de turmas vinculadas ao usuario. Retorna lista vazia quando nao houver vinculos.',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'array',
+                  items: {
+                    $ref: '#/components/schemas/Classroom'
+                  }
+                },
+                example: [classroomExample]
+              }
+            }
+          },
+          502: {
+            description: 'Falha ao consultar a API Turma',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/ErrorResponse'
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    '/api/v1/turma/classrooms/{id}': {
+      get: {
+        summary: 'Lista membros de uma turma pela API Turma',
+        tags: ['APITURMA'],
+        description: 'Encaminha a chamada para listar professores e alunos vinculados a uma turma. O parametro id representa o UUID da turma.',
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: {
+              type: 'string',
+              format: 'uuid'
+            },
+            description: 'UUID da turma'
+          }
+        ],
+        responses: {
+          200: {
+            description: 'Lista de membros da turma. Retorna lista vazia quando a turma nao possuir membros.',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'array',
+                  items: {
+                    $ref: '#/components/schemas/ClassroomMember'
+                  }
+                },
+                example: [
+                  classroomMemberExample,
+                  {
+                    ...classroomMemberExample,
+                    id: 'uuid-do-vinculo-aluno',
+                    userId: 25,
+                    role: 'Aluno'
+                  }
+                ]
+              }
+            }
+          },
+          404: {
+            description: 'Turma nao encontrada'
+          },
+          502: {
+            description: 'Falha ao consultar a API Turma',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/ErrorResponse'
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    '/api/v1/turma/classrooms/{id}/teachers': {
+      post: {
+        summary: 'Vincula professor a uma turma pela API Turma',
+        tags: ['APITURMA'],
+        description: 'Cria um vinculo em classroom_members com role Professor. A combinacao classroomId + userId deve ser unica.',
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: {
+              type: 'string',
+              format: 'uuid'
+            },
+            description: 'UUID da turma'
+          }
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                $ref: '#/components/schemas/AddClassroomMemberRequest'
+              },
+              example: {
+                userId: 10
+              }
+            }
+          }
+        },
+        responses: {
+          201: {
+            description: 'Professor vinculado a turma',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/ClassroomMember'
+                },
+                example: classroomMemberExample
+              }
+            }
+          },
+          404: {
+            description: 'Turma nao encontrada'
+          },
+          409: {
+            description: 'Usuario ja vinculado a esta turma'
+          },
+          502: {
+            description: 'Falha ao consultar a API Turma',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/ErrorResponse'
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    '/api/v1/turma/classrooms/{id}/students': {
+      post: {
+        summary: 'Vincula aluno a uma turma pela API Turma',
+        tags: ['APITURMA'],
+        description: 'Cria um vinculo em classroom_members com role Aluno. A combinacao classroomId + userId deve ser unica.',
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: {
+              type: 'string',
+              format: 'uuid'
+            },
+            description: 'UUID da turma'
+          }
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                $ref: '#/components/schemas/AddClassroomMemberRequest'
+              },
+              example: {
+                userId: 25
+              }
+            }
+          }
+        },
+        responses: {
+          201: {
+            description: 'Aluno vinculado a turma',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/ClassroomMember'
+                },
+                example: {
+                  ...classroomMemberExample,
+                  userId: 25,
+                  role: 'Aluno'
+                }
+              }
+            }
+          },
+          404: {
+            description: 'Turma nao encontrada'
+          },
+          409: {
+            description: 'Usuario ja vinculado a esta turma'
+          },
+          502: {
+            description: 'Falha ao consultar a API Turma',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/ErrorResponse'
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   components: {
@@ -1113,6 +1348,45 @@ const swaggerSpec = {
             type: 'string',
             format: 'date-time',
             example: classroomExample.updatedAt
+          }
+        }
+      },
+      AddClassroomMemberRequest: {
+        type: 'object',
+        required: ['userId'],
+        properties: {
+          userId: {
+            type: 'number',
+            example: 10
+          }
+        }
+      },
+      ClassroomMember: {
+        type: 'object',
+        properties: {
+          id: {
+            type: 'string',
+            format: 'uuid',
+            example: classroomMemberExample.id
+          },
+          classroomId: {
+            type: 'string',
+            format: 'uuid',
+            example: classroomMemberExample.classroomId
+          },
+          userId: {
+            type: 'number',
+            example: classroomMemberExample.userId
+          },
+          role: {
+            type: 'string',
+            enum: ['Professor', 'Aluno'],
+            example: classroomMemberExample.role
+          },
+          createdAt: {
+            type: 'string',
+            format: 'date-time',
+            example: classroomMemberExample.createdAt
           }
         }
       },

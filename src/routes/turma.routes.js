@@ -25,4 +25,32 @@ turmaRouter.get('/classrooms', (req, res, next) => {
   });
 });
 
+turmaRouter.get('/classrooms/:id/members', (req, res, next) => {
+  proxyApiTurmaRequest(req, res, next, {
+    method: 'GET',
+    path: `/classrooms/${encodeURIComponent(req.params.id)}/members`
+  });
+});
+
+turmaRouter.get('/classrooms/:id', (req, res, next) => {
+  proxyApiTurmaRequest(req, res, next, {
+    method: 'GET',
+    path: `/classrooms/${encodeURIComponent(req.params.id)}`
+  });
+});
+
+turmaRouter.post('/classrooms/:id/teachers', (req, res, next) => {
+  proxyApiTurmaRequest(req, res, next, {
+    method: 'POST',
+    path: `/classrooms/${encodeURIComponent(req.params.id)}/teachers`
+  });
+});
+
+turmaRouter.post('/classrooms/:id/students', (req, res, next) => {
+  proxyApiTurmaRequest(req, res, next, {
+    method: 'POST',
+    path: `/classrooms/${encodeURIComponent(req.params.id)}/students`
+  });
+});
+
 module.exports = turmaRouter;

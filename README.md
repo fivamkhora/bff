@@ -61,6 +61,10 @@ BFF_PUBLIC_URL=https://bff-khora.onrender.com
 - `GET /api/v1/turma/health` - health check da API Turma
 - `POST /api/v1/turma/classrooms` - cria uma turma
 - `GET /api/v1/turma/classrooms` - lista turmas
+- `GET /api/v1/turma/classrooms/:id/members` - lista turmas de um usuario vinculado
+- `GET /api/v1/turma/classrooms/:id` - lista membros de uma turma
+- `POST /api/v1/turma/classrooms/:id/teachers` - vincula professor a turma
+- `POST /api/v1/turma/classrooms/:id/students` - vincula aluno a turma
 
 ### Regra de negocio da API IA
 
