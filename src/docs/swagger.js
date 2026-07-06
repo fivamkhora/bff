@@ -375,6 +375,96 @@ const swaggerSpec = {
         }
       }
     },
+    '/api/v1/auth/users': {
+      get: {
+        summary: 'Busca multiplos usuarios por IDs pela API Auth',
+        tags: ['APIAUTH'],
+        security: [{ bearerAuth: [] }],
+        description: 'Rota privada. Envie Authorization: Bearer <token>. Recebe ids como string separada por virgula, remove duplicados, limita a 100 IDs por requisicao e retorna apenas usuarios encontrados.',
+        parameters: [
+          {
+            name: 'ids',
+            in: 'query',
+            required: true,
+            schema: {
+              type: 'string',
+              example: '10,25,30,31'
+            },
+            description: 'IDs numericos separados por virgula. Cada ID deve ser maior que zero.'
+          }
+        ],
+        responses: {
+          200: {
+            description: 'Lista de usuarios encontrados. Retorna array vazio quando nenhum usuario for encontrado.',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'array',
+                  items: {
+                    $ref: '#/components/schemas/AuthUserDetails'
+                  }
+                },
+                example: [
+                  {
+                    id: 10,
+                    username: 'joao.professor',
+                    role: 'Professor',
+                    cpf: '11111111111',
+                    name: 'Joao Professor Exemplo',
+                    birth: '1980-01-01',
+                    email: 'joao.professor@example.com',
+                    user_id: 10
+                  },
+                  {
+                    id: 25,
+                    username: 'jose.aluno',
+                    role: 'Aluno',
+                    cpf: '22222222222',
+                    name: 'Jose Aluno Exemplo',
+                    birth: '2005-01-01',
+                    email: 'jose.aluno@example.com',
+                    user_id: 25
+                  }
+                ]
+              }
+            }
+          },
+          400: {
+            description: 'Parametro ids ausente ou invalido',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/AuthErrorResponse'
+                }
+              }
+            }
+          },
+          401: {
+            description: 'Token ausente ou invalido',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/AuthErrorResponse'
+                },
+                example: {
+                  message: 'Unauthorized'
+                }
+              }
+            }
+          },
+          502: {
+            description: 'Falha ao consultar a API Auth',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/ErrorResponse'
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     '/api/v1/auth/user/{identifier}': {
       get: {
         summary: 'Busca usuario por ID numerico ou nome parcial pela API Auth',
