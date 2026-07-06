@@ -54,6 +54,7 @@ BFF_PUBLIC_URL=https://bff-khora.onrender.com
 - `POST /api/v1/auth/user/signin` - autentica usuario e retorna JWT
 - `GET /api/v1/auth/user/whoami` - retorna o usuario autenticado pelo token JWT
 - `GET /api/v1/auth/user/:identifier` - busca usuario por ID numerico ou nome parcial com Bearer token
+- `GET /api/v1/auth/users?ids=10,25,30` - busca multiplos usuarios por IDs com Bearer token
 - `GET /api/v1/ia/health` - health check da API de IA
 - `POST /api/v1/ia/assessments` - cria uma avaliacao escolar
 - `GET /api/v1/ia/assessments` - lista avaliacoes salvas com filtros opcionais
@@ -85,6 +86,7 @@ BFF_PUBLIC_URL=https://bff-khora.onrender.com
 - `GET /api/v1/auth/user/whoami` usa o `sub` do JWT para retornar o usuario autenticado.
 - `GET /api/v1/auth/user/:identifier` faz a consulta autenticada com Bearer token.
 - Quando `identifier` e numerico, a busca e por `user.id`; quando e texto, a busca e por nome parcial em `person.name`.
+- `GET /api/v1/auth/users?ids=10,25,30` busca multiplos usuarios por IDs, remove duplicados, limita a 100 IDs e retorna apenas usuarios encontrados.
 
 ## Docker
 

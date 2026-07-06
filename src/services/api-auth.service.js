@@ -6,6 +6,23 @@ function buildApiAuthUrl(path) {
   return new URL(path, env.apiAuthBaseUrl).toString();
 }
 
+function buildApiAuthUrlWithQuery(path, query) {
+  const url = new URL(path, env.apiAuthBaseUrl);
+
+  Object.entries(query ?? {}).forEach(([key, value]) => {
+    if (Array.isArray(value)) {
+      value.forEach((item) => url.searchParams.append(key, item));
+      return;
+    }
+
+    if (value !== undefined) {
+      url.searchParams.append(key, value);
+    }
+  });
+
+  return url.toString();
+}
+
 function buildForwardHeaders(req) {
   const headers = {
     accept: JSON_CONTENT_TYPE,
@@ -29,7 +46,11 @@ function buildForwardHeaders(req) {
 
 async function proxyApiAuthRequest(req, res, next, options) {
   try {
-    const response = await fetch(buildApiAuthUrl(options.path), {
+    const url = options.forwardQuery
+      ? buildApiAuthUrlWithQuery(options.path, req.query)
+      : buildApiAuthUrl(options.path);
+
+    const response = await fetch(url, {
       method: options.method,
       headers: buildForwardHeaders(req),
       body: options.method === 'GET' ? undefined : JSON.stringify(req.body ?? {})
