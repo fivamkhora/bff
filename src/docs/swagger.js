@@ -132,51 +132,6 @@ const swaggerSpec = {
             }
           }
         }
-      },
-      get: {
-        summary: 'Lista todos os usuarios pela API Auth',
-        tags: ['APIAUTH'],
-        security: [{ bearerAuth: [] }],
-        description: 'Rota privada. Envie Authorization: Bearer <token>. Retorna todos os usuarios registrados/criados, sem senha ou campos sensiveis.',
-        responses: {
-          200: {
-            description: 'Lista de usuarios registrados',
-            content: {
-              'application/json': {
-                schema: {
-                  type: 'array',
-                  items: {
-                    $ref: '#/components/schemas/AuthUserDetails'
-                  }
-                },
-                example: [authUserDetailsExample]
-              }
-            }
-          },
-          401: {
-            description: 'Token ausente ou invalido',
-            content: {
-              'application/json': {
-                schema: {
-                  $ref: '#/components/schemas/AuthErrorResponse'
-                },
-                example: {
-                  message: 'Unauthorized'
-                }
-              }
-            }
-          },
-          502: {
-            description: 'Falha ao consultar a API Auth',
-            content: {
-              'application/json': {
-                schema: {
-                  $ref: '#/components/schemas/ErrorResponse'
-                }
-              }
-            }
-          }
-        }
       }
     },
     '/api/v1/health': {
@@ -286,6 +241,51 @@ const swaggerSpec = {
               'application/json': {
                 schema: {
                   $ref: '#/components/schemas/AuthErrorResponse'
+                }
+              }
+            }
+          },
+          502: {
+            description: 'Falha ao consultar a API Auth',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/ErrorResponse'
+                }
+              }
+            }
+          }
+        }
+      },
+      get: {
+        summary: 'Lista todos os usuarios pela API Auth',
+        tags: ['APIAUTH'],
+        security: [{ bearerAuth: [] }],
+        description: 'Rota privada. Envie Authorization: Bearer <token>. Retorna todos os usuarios registrados/criados, sem senha ou campos sensiveis.',
+        responses: {
+          200: {
+            description: 'Lista de usuarios registrados',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'array',
+                  items: {
+                    $ref: '#/components/schemas/AuthUserDetails'
+                  }
+                },
+                example: [authUserDetailsExample]
+              }
+            }
+          },
+          401: {
+            description: 'Token ausente ou invalido',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/AuthErrorResponse'
+                },
+                example: {
+                  message: 'Unauthorized'
                 }
               }
             }
