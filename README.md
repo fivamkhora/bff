@@ -52,6 +52,7 @@ BFF_PUBLIC_URL=https://bff-khora.onrender.com
 - `GET /api/v1/users/me` - exemplo de rota protegida por Bearer token
 - `POST /api/v1/auth/user` - cria um usuario
 - `POST /api/v1/auth/user/signin` - autentica usuario e retorna JWT
+- `GET /api/v1/auth/user` - lista todos os usuarios registrados com Bearer token
 - `GET /api/v1/auth/user/whoami` - retorna o usuario autenticado pelo token JWT
 - `GET /api/v1/auth/user/:identifier` - busca usuario por ID numerico ou nome parcial com Bearer token
 - `GET /api/v1/auth/users?ids=10,25,30` - busca multiplos usuarios por IDs com Bearer token
@@ -83,6 +84,7 @@ BFF_PUBLIC_URL=https://bff-khora.onrender.com
 - Campos opcionais no cadastro: `cpf` e `birth`.
 - `POST /api/v1/auth/user/signin` retorna `token` e `role`.
 - O `role` retornado prioriza `person.role` quando houver pessoa vinculada; caso contrario usa `user.role`.
+- `GET /api/v1/auth/user` lista todos os usuarios registrados, sem senha ou campos sensiveis.
 - `GET /api/v1/auth/user/whoami` usa o `sub` do JWT para retornar o usuario autenticado.
 - `GET /api/v1/auth/user/:identifier` faz a consulta autenticada com Bearer token.
 - Quando `identifier` e numerico, a busca e por `user.id`; quando e texto, a busca e por nome parcial em `person.name`.
