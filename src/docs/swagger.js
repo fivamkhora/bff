@@ -261,7 +261,19 @@ const swaggerSpec = {
         summary: 'Lista todos os usuarios pela API Auth',
         tags: ['APIAUTH'],
         security: [{ bearerAuth: [] }],
-        description: 'Rota privada. Envie Authorization: Bearer <token>. Retorna todos os usuarios registrados/criados, sem senha ou campos sensiveis.',
+        description: 'Rota privada. Envie Authorization: Bearer <token>. Retorna usuarios registrados/criados, sem senha ou campos sensiveis. O filtro role e opcional.',
+        parameters: [
+          {
+            name: 'role',
+            in: 'query',
+            required: false,
+            schema: {
+              type: 'string',
+              enum: ['Aluno', 'Professor']
+            },
+            description: 'Filtro opcional por role.'
+          }
+        ],
         responses: {
           200: {
             description: 'Lista de usuarios registrados',
@@ -274,6 +286,16 @@ const swaggerSpec = {
                   }
                 },
                 example: [authUserDetailsExample]
+              }
+            }
+          },
+          400: {
+            description: 'Role invalida. Use Aluno ou Professor.',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/AuthErrorResponse'
+                }
               }
             }
           },

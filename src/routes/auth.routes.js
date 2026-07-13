@@ -14,7 +14,8 @@ authRouter.post('/user', (req, res, next) => {
 authRouter.get('/user', (req, res, next) => {
   proxyApiAuthRequest(req, res, next, {
     method: 'GET',
-    path: '/user'
+    path: '/user',
+    forwardQuery: true
   });
 });
 
