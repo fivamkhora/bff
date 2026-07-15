@@ -1109,6 +1109,54 @@ const swaggerSpec = {
             }
           }
         }
+      },
+      delete: {
+        summary: 'Remove professor de uma turma pela API Turma',
+        tags: ['APITURMA'],
+        description: 'Remove o vinculo de professor da turma. Em caso de sucesso, a API responde com 204 No Content.',
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: {
+              type: 'string',
+              format: 'uuid'
+            },
+            description: 'UUID da turma'
+          }
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                $ref: '#/components/schemas/AddClassroomMemberRequest'
+              },
+              example: {
+                userId: 10
+              }
+            }
+          }
+        },
+        responses: {
+          204: {
+            description: 'Professor removido da turma'
+          },
+          404: {
+            description: 'Turma nao encontrada ou professor nao encontrado na turma'
+          },
+          502: {
+            description: 'Falha ao consultar a API Turma',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/ErrorResponse'
+                }
+              }
+            }
+          }
+        }
       }
     },
     '/api/v1/turma/classrooms/{id}/students': {
@@ -1162,6 +1210,54 @@ const swaggerSpec = {
           },
           409: {
             description: 'Usuario ja vinculado a esta turma'
+          },
+          502: {
+            description: 'Falha ao consultar a API Turma',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/ErrorResponse'
+                }
+              }
+            }
+          }
+        }
+      },
+      delete: {
+        summary: 'Remove aluno de uma turma pela API Turma',
+        tags: ['APITURMA'],
+        description: 'Remove o vinculo de aluno da turma. Em caso de sucesso, a API responde com 204 No Content.',
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: {
+              type: 'string',
+              format: 'uuid'
+            },
+            description: 'UUID da turma'
+          }
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                $ref: '#/components/schemas/AddClassroomMemberRequest'
+              },
+              example: {
+                userId: 25
+              }
+            }
+          }
+        },
+        responses: {
+          204: {
+            description: 'Aluno removido da turma'
+          },
+          404: {
+            description: 'Turma nao encontrada ou aluno nao encontrado na turma'
           },
           502: {
             description: 'Falha ao consultar a API Turma',

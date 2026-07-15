@@ -53,7 +53,9 @@ describe('BFF API', () => {
     assert.ok(body.paths['/api/v1/turma/classrooms/{id}']);
     assert.ok(body.paths['/api/v1/turma/classrooms/{id}/members']);
     assert.ok(body.paths['/api/v1/turma/classrooms/{id}/teachers']);
+    assert.ok(body.paths['/api/v1/turma/classrooms/{id}/teachers'].delete);
     assert.ok(body.paths['/api/v1/turma/classrooms/{id}/students']);
+    assert.ok(body.paths['/api/v1/turma/classrooms/{id}/students'].delete);
   });
 
   it('protects the authenticated user route', async () => {
