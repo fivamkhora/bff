@@ -996,9 +996,9 @@ const swaggerSpec = {
     },
     '/api/v1/turma/classrooms/{id}': {
       get: {
-        summary: 'Lista membros de uma turma pela API Turma',
+        summary: 'Busca turma por ID pela API Turma',
         tags: ['APITURMA'],
-        description: 'Encaminha a chamada para listar professores e alunos vinculados a uma turma. O parametro id representa o UUID da turma.',
+        description: 'Encaminha a chamada para buscar uma turma individual pelo UUID.',
         parameters: [
           {
             name: 'id',
@@ -1013,24 +1013,13 @@ const swaggerSpec = {
         ],
         responses: {
           200: {
-            description: 'Lista de membros da turma. Retorna lista vazia quando a turma nao possuir membros.',
+            description: 'Turma encontrada',
             content: {
               'application/json': {
                 schema: {
-                  type: 'array',
-                  items: {
-                    $ref: '#/components/schemas/ClassroomMember'
-                  }
+                  $ref: '#/components/schemas/Classroom'
                 },
-                example: [
-                  classroomMemberExample,
-                  {
-                    ...classroomMemberExample,
-                    id: 'uuid-do-vinculo-aluno',
-                    userId: 25,
-                    role: 'Aluno'
-                  }
-                ]
+                example: classroomExample
               }
             }
           },
