@@ -93,6 +93,12 @@ BFF_PUBLIC_URL=https://bff-khora.onrender.com
 - Quando `identifier` e numerico, a busca e por `user.id`; quando e texto, a busca e por nome parcial em `person.name`.
 - `GET /api/v1/auth/users?ids=10,25,30` busca multiplos usuarios por IDs, remove duplicados, limita a 100 IDs e retorna apenas usuarios encontrados.
 
+### Regra de negocio da API Turma
+
+- `POST /api/v1/turma/classrooms` cria turma com `name` e `schoolYear`; nao recebe mais `teacherId`.
+- Professores devem ser vinculados depois com `POST /api/v1/turma/classrooms/:id/teachers`.
+- O modelo `Classroom` nao possui mais `teacherId`; os vinculos ficam em `classroom_members`.
+
 ## Docker
 
 ```bash

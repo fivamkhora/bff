@@ -31,7 +31,6 @@ const classroomExample = {
   name: 'Turma 1A',
   code: 'TURMA-ABC123',
   schoolYear: '2026',
-  teacherId: 1,
   createdAt: '2026-06-28T00:00:00.000Z',
   updatedAt: '2026-06-28T00:00:00.000Z'
 };
@@ -873,8 +872,7 @@ const swaggerSpec = {
               },
               example: {
                 name: 'Turma 1A',
-                schoolYear: '2026',
-                teacherId: 1
+                schoolYear: '2026'
               }
             }
           }
@@ -1597,7 +1595,7 @@ const swaggerSpec = {
       },
       CreateClassroomRequest: {
         type: 'object',
-        required: ['name', 'schoolYear', 'teacherId'],
+        required: ['name', 'schoolYear'],
         properties: {
           name: {
             type: 'string',
@@ -1606,10 +1604,6 @@ const swaggerSpec = {
           schoolYear: {
             type: 'string',
             example: '2026'
-          },
-          teacherId: {
-            type: 'number',
-            example: 1
           }
         }
       },
@@ -1632,10 +1626,6 @@ const swaggerSpec = {
           schoolYear: {
             type: 'string',
             example: classroomExample.schoolYear
-          },
-          teacherId: {
-            type: 'number',
-            example: classroomExample.teacherId
           },
           createdAt: {
             type: 'string',
