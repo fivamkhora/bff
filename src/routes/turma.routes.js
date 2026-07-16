@@ -32,6 +32,13 @@ turmaRouter.get('/classrooms/:id/members', (req, res, next) => {
   });
 });
 
+turmaRouter.get('/classrooms/:id/classrooms', (req, res, next) => {
+  proxyApiTurmaRequest(req, res, next, {
+    method: 'GET',
+    path: `/classrooms/${encodeURIComponent(req.params.id)}/classrooms`
+  });
+});
+
 turmaRouter.get('/classrooms/:id', (req, res, next) => {
   proxyApiTurmaRequest(req, res, next, {
     method: 'GET',

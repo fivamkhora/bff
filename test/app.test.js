@@ -52,6 +52,7 @@ describe('BFF API', () => {
     assert.ok(body.paths['/api/v1/turma/classrooms']);
     assert.ok(body.paths['/api/v1/turma/classrooms/{id}']);
     assert.ok(body.paths['/api/v1/turma/classrooms/{id}/members']);
+    assert.ok(body.paths['/api/v1/turma/classrooms/{id}/classrooms']);
     assert.ok(body.paths['/api/v1/turma/classrooms/{id}/teachers']);
     assert.ok(body.paths['/api/v1/turma/classrooms/{id}/teachers'].delete);
     assert.ok(body.paths['/api/v1/turma/classrooms/{id}/students']);

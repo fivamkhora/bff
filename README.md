@@ -65,6 +65,7 @@ BFF_PUBLIC_URL=https://bff-khora.onrender.com
 - `GET /api/v1/turma/classrooms` - lista turmas
 - `GET /api/v1/turma/classrooms/:id/members` - lista turmas de um usuario vinculado
 - `GET /api/v1/turma/classrooms/:id` - busca turma por ID
+- `GET /api/v1/turma/classrooms/:id/classrooms` - lista membros de uma turma
 - `POST /api/v1/turma/classrooms/:id/teachers` - vincula professor a turma
 - `DELETE /api/v1/turma/classrooms/:id/teachers` - remove professor de turma
 - `POST /api/v1/turma/classrooms/:id/students` - vincula aluno a turma

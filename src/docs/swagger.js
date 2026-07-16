@@ -1039,6 +1039,62 @@ const swaggerSpec = {
         }
       }
     },
+    '/api/v1/turma/classrooms/{id}/classrooms': {
+      get: {
+        summary: 'Lista membros de uma turma pela API Turma',
+        tags: ['APITURMA'],
+        description: 'Encaminha a chamada para listar os membros vinculados a uma turma. Se a turma nao possuir membros, retorna lista vazia.',
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: {
+              type: 'string',
+              format: 'uuid'
+            },
+            description: 'UUID da turma'
+          }
+        ],
+        responses: {
+          200: {
+            description: 'Lista de membros da turma',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'array',
+                  items: {
+                    $ref: '#/components/schemas/ClassroomMember'
+                  }
+                },
+                example: [
+                  classroomMemberExample,
+                  {
+                    ...classroomMemberExample,
+                    id: 'uuid-do-vinculo-aluno',
+                    userId: 25,
+                    role: 'Aluno'
+                  }
+                ]
+              }
+            }
+          },
+          404: {
+            description: 'Turma nao encontrada'
+          },
+          502: {
+            description: 'Falha ao consultar a API Turma',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/ErrorResponse'
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     '/api/v1/turma/classrooms/{id}/teachers': {
       post: {
         summary: 'Vincula professor a uma turma pela API Turma',
