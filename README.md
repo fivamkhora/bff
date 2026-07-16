@@ -1,21 +1,28 @@
 # BFF API
 
-Backend For Frontend em Node.js com Express, documentação Swagger/OpenAPI,
-testes automatizados, Docker e CI/CD via GitHub Actions.
+Backend For Frontend em Node.js com Express para centralizar o consumo das APIs do ecossistema Khora/FIVAM.
+
+O BFF expoe documentacao Swagger/OpenAPI, repassa chamadas para os microsservicos e padroniza o ponto de entrada do frontend.
 
 ## Requisitos
 
 - Node.js 22.x
 - npm
 
-## Como rodar localmente
+## Aplicacoes Integradas
+
+- API Auth: `https://api-auth-khora.onrender.com`
+- API IA: `https://api-ia-khora.onrender.com`
+- API Turma: `https://api-turma-khora.onrender.com`
+
+## Como Rodar Localmente
 
 ```bash
 npm install
 npm run dev
 ```
 
-A API fica disponível em:
+URLs locais:
 
 - API: `http://localhost:3000`
 - Swagger: `http://localhost:3000/docs`
@@ -29,7 +36,7 @@ npm run dev    # inicia com --watch
 npm test       # roda testes nativos do Node.js
 ```
 
-## Variaveis de ambiente
+## Variaveis De Ambiente
 
 Copie `.env.example` para `.env` e ajuste conforme o ambiente.
 
@@ -44,60 +51,84 @@ API_TURMA_BASE_URL=https://api-turma-khora.onrender.com
 BFF_PUBLIC_URL=https://bff-khora.onrender.com
 ```
 
-## Rotas iniciais
+## Rotas Do BFF
+
+### Sistema
 
 - `GET /` - metadados da API
 - `GET /api/v1/health` - health check
 - `GET /api/v1/status` - status do BFF
-- `GET /api/v1/users/me` - exemplo de rota protegida por Bearer token
-- `POST /api/v1/auth/user` - cria um usuario
+- `GET /docs` - Swagger UI
+- `GET /docs.json` - especificacao OpenAPI
+
+### API Auth
+
+- `POST /api/v1/auth/user` - cria usuario
 - `POST /api/v1/auth/user/signin` - autentica usuario e retorna JWT
-- `GET /api/v1/auth/user?role=Aluno|Professor` - lista usuarios com filtro opcional por role e Bearer token
+- `GET /api/v1/auth/user?role=Aluno|Professor` - lista usuarios com filtro opcional por role
 - `GET /api/v1/auth/user/whoami` - retorna o usuario autenticado pelo token JWT
-- `GET /api/v1/auth/user/:identifier` - busca usuario por ID numerico ou nome parcial com Bearer token
-- `GET /api/v1/auth/users?ids=10,25,30` - busca multiplos usuarios por IDs com Bearer token
-- `GET /api/v1/ia/health` - health check da API de IA
-- `POST /api/v1/ia/assessments` - cria uma avaliacao escolar
-- `GET /api/v1/ia/assessments` - lista avaliacoes salvas com filtros opcionais
-- `POST /api/v1/ia/assessments/:assessmentId/revisions` - cria uma revisao da avaliacao
-- `GET /api/v1/turma/health` - health check da API Turma
-- `POST /api/v1/turma/classrooms` - cria uma turma
-- `GET /api/v1/turma/classrooms` - lista turmas
-- `GET /api/v1/turma/classrooms/:id/members` - lista turmas de um usuario vinculado
-- `GET /api/v1/turma/classrooms/:id` - busca turma por ID
-- `GET /api/v1/turma/classrooms/:id/classrooms` - lista membros de uma turma
-- `POST /api/v1/turma/classrooms/:id/teachers` - vincula professor a turma
-- `DELETE /api/v1/turma/classrooms/:id/teachers` - remove professor de turma
-- `POST /api/v1/turma/classrooms/:id/students` - vincula aluno a turma
-- `DELETE /api/v1/turma/classrooms/:id/students` - remove aluno de turma
+- `GET /api/v1/auth/user/:identifier` - busca usuario por ID numerico ou nome parcial
+- `GET /api/v1/auth/users?ids=10,25,30` - busca multiplos usuarios por IDs
 
-### Regra de negocio da API IA
-
-- `POST /api/v1/ia/assessments` cria uma avaliacao a partir do material usado em aula e salva a versao inicial.
-- A API IA persiste os dados originais em `assessments` e cada versao gerada ou revisada em `assessment_versions`.
-- `GET /api/v1/ia/assessments` lista as avaliacoes salvas. Sem query params, retorna todas (`all`).
-- A listagem aceita filtros opcionais: `subject`, `gradeLevel`, `classroomMaterial`, `assessmentType`, `assessmentId`, `questionCount`, `difficulty` e `teacherInstructions`.
-- `assessmentId` nao e obrigatorio; use `GET /api/v1/ia/assessments?assessmentId=uuid` somente quando quiser buscar por identificador.
-- `POST /api/v1/ia/assessments/:assessmentId/revisions` cria nova versao usando o material original, a avaliacao atual e o pedido de ajuste do professor.
-
-### Regra de negocio da API Auth
+Regras principais:
 
 - `POST /api/v1/auth/user` cria um registro em `user` e um registro em `person`, vinculando `person.user_id = user.id`.
 - Campos obrigatorios no cadastro: `username`, `password`, `role`, `name` e `email`.
 - Campos opcionais no cadastro: `cpf` e `birth`.
 - `POST /api/v1/auth/user/signin` retorna `token` e `role`.
 - O `role` retornado prioriza `person.role` quando houver pessoa vinculada; caso contrario usa `user.role`.
-- `GET /api/v1/auth/user?role=Aluno|Professor` lista usuarios registrados, sem senha ou campos sensiveis, com filtro opcional por role.
-- `GET /api/v1/auth/user/whoami` usa o `sub` do JWT para retornar o usuario autenticado.
-- `GET /api/v1/auth/user/:identifier` faz a consulta autenticada com Bearer token.
-- Quando `identifier` e numerico, a busca e por `user.id`; quando e texto, a busca e por nome parcial em `person.name`.
-- `GET /api/v1/auth/users?ids=10,25,30` busca multiplos usuarios por IDs, remove duplicados, limita a 100 IDs e retorna apenas usuarios encontrados.
+- Rotas privadas exigem `Authorization: Bearer <token>`.
+- `GET /api/v1/auth/user/:identifier` busca por `user.id` quando `identifier` e numerico, ou por nome parcial em `person.name` quando e texto.
+- `GET /api/v1/auth/users?ids=...` remove IDs duplicados, limita a 100 IDs e retorna apenas usuarios encontrados.
 
-### Regra de negocio da API Turma
+### API IA
 
-- `POST /api/v1/turma/classrooms` cria turma com `name` e `schoolYear`; nao recebe mais `teacherId`.
+- `GET /api/v1/ia/health` - health check da API IA
+- `POST /api/v1/ia/assessments` - cria avaliacao escolar
+- `GET /api/v1/ia/assessments` - lista avaliacoes salvas com filtros opcionais
+- `POST /api/v1/ia/assessments/:assessmentId/revisions` - cria revisao da avaliacao
+
+Filtros opcionais de `GET /api/v1/ia/assessments`:
+
+- `subject`
+- `gradeLevel`
+- `classroomMaterial`
+- `assessmentType`
+- `assessmentId`
+- `questionCount`
+- `difficulty`
+- `teacherInstructions`
+
+Regras principais:
+
+- `POST /api/v1/ia/assessments` cria uma avaliacao a partir do material usado em aula e salva a versao inicial.
+- A API IA persiste os dados originais em `assessments` e cada versao gerada ou revisada em `assessment_versions`.
+- Sem query params, `GET /api/v1/ia/assessments` retorna todas as avaliacoes.
+- `assessmentId` nao e obrigatorio; use `GET /api/v1/ia/assessments?assessmentId=uuid` somente para buscar por identificador.
+- Revisoes usam o material original, a avaliacao atual e o pedido de ajuste do professor.
+
+### API Turma
+
+- `GET /api/v1/turma/health` - health check da API Turma
+- `POST /api/v1/turma/classrooms` - cria turma
+- `GET /api/v1/turma/classrooms` - lista turmas
+- `GET /api/v1/turma/classrooms/:id/members` - lista turmas de um usuario vinculado
+- `GET /api/v1/turma/classrooms/:id` - busca turma por ID
+- `GET /api/v1/turma/classrooms/:id/classrooms` - lista membros de uma turma
+- `POST /api/v1/turma/classrooms/:id/teachers` - vincula professor a turma
+- `DELETE /api/v1/turma/classrooms/:id/teachers` - remove professor da turma
+- `POST /api/v1/turma/classrooms/:id/students` - vincula aluno a turma
+- `DELETE /api/v1/turma/classrooms/:id/students` - remove aluno da turma
+
+Regras principais:
+
+- `POST /api/v1/turma/classrooms` cria turma com `name` e `schoolYear`.
+- A criacao de turma nao recebe `teacherId`.
 - Professores devem ser vinculados depois com `POST /api/v1/turma/classrooms/:id/teachers`.
 - O modelo `Classroom` nao possui mais `teacherId`; os vinculos ficam em `classroom_members`.
+- `GET /api/v1/turma/classrooms/:id/members` usa `id` como `userId` numerico.
+- `GET /api/v1/turma/classrooms/:id` usa `id` como UUID da turma.
+- `GET /api/v1/turma/classrooms/:id/classrooms` lista os membros da turma.
 
 ## Docker
 
@@ -105,3 +136,12 @@ BFF_PUBLIC_URL=https://bff-khora.onrender.com
 docker build -f docker/Dockerfile -t bff:local .
 docker run --rm -p 3000:3000 --env-file .env bff:local
 ```
+
+## CI/CD
+
+O workflow em `.github/workflows/ci.yml` executa:
+
+- testes com Node.js 22
+- scan de vulnerabilidades com Trivy
+- build e push da imagem Docker em pushes para `main` ou tags
+- deploy no Render quando as credenciais estiverem configuradas
