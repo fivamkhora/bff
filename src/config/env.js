@@ -6,6 +6,7 @@ const env = {
   apiAuthBaseUrl: process.env.API_AUTH_BASE_URL ?? 'https://api-auth-khora.onrender.com',
   apiIaBaseUrl: process.env.API_IA_BASE_URL ?? 'https://api-ia-khora.onrender.com',
   apiTurmaBaseUrl: process.env.API_TURMA_BASE_URL ?? 'https://api-turma-khora.onrender.com',
+  apiAvaliacaoBaseUrl: process.env.API_AVALIACAO_BASE_URL ?? 'https://api-avaliacao-khora.onrender.com',
   bffPublicUrl: process.env.BFF_PUBLIC_URL ?? 'https://bff-khora.onrender.com'
 };
 

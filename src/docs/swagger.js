@@ -73,6 +73,123 @@ const authWhoamiExample = {
   role: 'Aluno'
 };
 
+const avaliacaoIdParameter = {
+  name: 'id',
+  in: 'path',
+  required: true,
+  schema: { type: 'string', format: 'uuid' }
+};
+
+const avaliacaoJsonBody = {
+  required: true,
+  content: {
+    'application/json': {
+      schema: { type: 'object', additionalProperties: true }
+    }
+  }
+};
+
+function avaliacaoResponses(successDescription, successStatus = 200) {
+  return {
+    [successStatus]: { description: successDescription },
+    400: { description: 'Dados ou filtros invalidos' },
+    404: { description: 'Registro nao encontrado' },
+    409: { description: 'Conflito com regra de negocio' },
+    502: { description: 'Falha ao consultar a API Avaliacao' }
+  };
+}
+
+function avaliacaoResourcePaths(resource, label, queryParameters = []) {
+  const basePath = `/api/v1/avaliacao/${resource}`;
+  return {
+    [basePath]: {
+      get: {
+        summary: `Lista ${label}`,
+        tags: ['APIAVALIACAO'],
+        parameters: queryParameters,
+        responses: avaliacaoResponses(`${label} listados com sucesso`)
+      },
+      post: {
+        summary: `Cria ${label}`,
+        tags: ['APIAVALIACAO'],
+        requestBody: avaliacaoJsonBody,
+        responses: avaliacaoResponses(`${label} criado com sucesso`, 201)
+      }
+    },
+    [`${basePath}/{id}`]: {
+      get: {
+        summary: `Busca ${label} por ID`,
+        tags: ['APIAVALIACAO'],
+        parameters: [avaliacaoIdParameter],
+        responses: avaliacaoResponses(`${label} encontrado`)
+      },
+      put: {
+        summary: `Atualiza parcialmente ${label}`,
+        tags: ['APIAVALIACAO'],
+        parameters: [avaliacaoIdParameter],
+        requestBody: avaliacaoJsonBody,
+        responses: avaliacaoResponses(`${label} atualizado`)
+      },
+      delete: {
+        summary: `Remove ${label}`,
+        tags: ['APIAVALIACAO'],
+        parameters: [avaliacaoIdParameter],
+        responses: avaliacaoResponses(`${label} removido`)
+      }
+    }
+  };
+}
+
+const avaliacaoPaths = {
+  '/api/v1/avaliacao/health': {
+    get: {
+      summary: 'Verifica a saude da API Avaliacao',
+      tags: ['APIAVALIACAO'],
+      responses: avaliacaoResponses('API Avaliacao disponivel')
+    }
+  },
+  ...avaliacaoResourcePaths('exams', 'avaliacoes', [
+    { name: 'classroomId', in: 'query', schema: { type: 'string' } },
+    { name: 'teacherId', in: 'query', schema: { type: 'string' } },
+    {
+      name: 'status',
+      in: 'query',
+      schema: { type: 'string', enum: ['DRAFT', 'PUBLISHED', 'CLOSED', 'CORRECTED'] }
+    }
+  ]),
+  '/api/v1/avaliacao/exams/upcoming': {
+    get: {
+      summary: 'Lista as proximas avaliacoes publicadas de uma turma',
+      tags: ['APIAVALIACAO'],
+      parameters: [
+        { name: 'classroomId', in: 'query', required: true, schema: { type: 'string' } }
+      ],
+      responses: avaliacaoResponses('Proximas avaliacoes encontradas')
+    }
+  },
+  ...avaliacaoResourcePaths('questions', 'questoes', [
+    { name: 'examId', in: 'query', schema: { type: 'string', format: 'uuid' } },
+    {
+      name: 'type',
+      in: 'query',
+      schema: { type: 'string', enum: ['MULTIPLE_CHOICE', 'TRUE_FALSE', 'ESSAY'] }
+    }
+  ]),
+  ...avaliacaoResourcePaths('submissions', 'submissoes', [
+    { name: 'examId', in: 'query', schema: { type: 'string', format: 'uuid' } },
+    { name: 'studentId', in: 'query', schema: { type: 'string' } },
+    {
+      name: 'status',
+      in: 'query',
+      schema: { type: 'string', enum: ['NOT_STARTED', 'IN_PROGRESS', 'SUBMITTED', 'CORRECTED'] }
+    }
+  ]),
+  ...avaliacaoResourcePaths('answers', 'respostas', [
+    { name: 'submissionId', in: 'query', schema: { type: 'string', format: 'uuid' } },
+    { name: 'questionId', in: 'query', schema: { type: 'string', format: 'uuid' } }
+  ])
+};
+
 const swaggerSpec = {
   openapi: '3.0.3',
   info: {
@@ -106,9 +223,14 @@ const swaggerSpec = {
     {
       name: 'APITURMA',
       description: 'Rotas do BFF para consumir a API Turma'
+    },
+    {
+      name: 'APIAVALIACAO',
+      description: 'Rotas do BFF para consumir a API Avaliacao Escolar'
     }
   ],
   paths: {
+    ...avaliacaoPaths,
     '/': {
       get: {
         summary: 'Retorna metadados da API',

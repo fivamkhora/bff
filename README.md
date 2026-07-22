@@ -14,6 +14,7 @@ O BFF expoe documentacao Swagger/OpenAPI, repassa chamadas para os microsservico
 - API Auth: `https://api-auth-khora.onrender.com`
 - API IA: `https://api-ia-khora.onrender.com`
 - API Turma: `https://api-turma-khora.onrender.com`
+- API Avaliacao: `https://api-avaliacao-khora.onrender.com`
 
 ## Como Rodar Localmente
 
@@ -48,6 +49,7 @@ API_VERSION=1.0.0
 API_AUTH_BASE_URL=https://api-auth-khora.onrender.com
 API_IA_BASE_URL=https://api-ia-khora.onrender.com
 API_TURMA_BASE_URL=https://api-turma-khora.onrender.com
+API_AVALIACAO_BASE_URL=https://api-avaliacao-khora.onrender.com
 BFF_PUBLIC_URL=https://bff-khora.onrender.com
 ```
 
@@ -129,6 +131,21 @@ Regras principais:
 - `GET /api/v1/turma/classrooms/:id/members` usa `id` como `userId` numerico.
 - `GET /api/v1/turma/classrooms/:id` usa `id` como UUID da turma.
 - `GET /api/v1/turma/classrooms/:id/classrooms` lista os membros da turma.
+
+### API Avaliacao
+
+- `GET /api/v1/avaliacao/health` - health check da API Avaliacao
+- `GET|POST /api/v1/avaliacao/exams` - lista ou cria avaliacoes
+- `GET /api/v1/avaliacao/exams/upcoming?classroomId=...` - lista proximas avaliacoes da turma
+- `GET|PUT|DELETE /api/v1/avaliacao/exams/:id` - consulta, atualiza ou remove uma avaliacao
+- `GET|POST /api/v1/avaliacao/questions` - lista ou cria questoes
+- `GET|PUT|DELETE /api/v1/avaliacao/questions/:id` - consulta, atualiza ou remove uma questao
+- `GET|POST /api/v1/avaliacao/submissions` - lista ou cria submissoes
+- `GET|PUT|DELETE /api/v1/avaliacao/submissions/:id` - consulta, atualiza ou remove uma submissao
+- `GET|POST /api/v1/avaliacao/answers` - lista ou cria respostas
+- `GET|PUT|DELETE /api/v1/avaliacao/answers/:id` - consulta, atualiza ou remove uma resposta
+
+As queries aceitas pelo microsservico sao repassadas integralmente. O BFF tambem encaminha o header `Authorization` quando informado.
 
 ## Docker
 
