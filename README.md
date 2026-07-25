@@ -67,7 +67,7 @@ BFF_PUBLIC_URL=https://bff-khora.onrender.com
 
 - `POST /api/v1/auth/user` - cria usuario
 - `POST /api/v1/auth/user/signin` - autentica usuario e retorna JWT
-- `GET /api/v1/auth/user?role=Aluno|Professor` - lista usuarios com filtro opcional por role
+- `GET /api/v1/auth/user?role=Aluno|Professor|Administrador` - lista usuarios com filtro opcional por role
 - `GET /api/v1/auth/user/whoami` - retorna o usuario autenticado pelo token JWT
 - `GET /api/v1/auth/user/:identifier` - busca usuario por ID numerico ou nome parcial
 - `GET /api/v1/auth/users?ids=10,25,30` - busca multiplos usuarios por IDs
@@ -77,6 +77,7 @@ Regras principais:
 - `POST /api/v1/auth/user` cria um registro em `user` e um registro em `person`, vinculando `person.user_id = user.id`.
 - Campos obrigatorios no cadastro: `username`, `password`, `role`, `name` e `email`.
 - Campos opcionais no cadastro: `cpf` e `birth`.
+- Roles aceitas: `Aluno`, `Professor` e `Administrador`.
 - `POST /api/v1/auth/user/signin` retorna `token` e `role`.
 - O `role` retornado prioriza `person.role` quando houver pessoa vinculada; caso contrario usa `user.role`.
 - Rotas privadas exigem `Authorization: Bearer <token>`.

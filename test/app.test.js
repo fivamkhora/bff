@@ -45,6 +45,9 @@ describe('BFF API', () => {
     assert.ok(body.paths['/api/v1/auth/user/whoami']);
     assert.ok(body.paths['/api/v1/auth/user/{identifier}']);
     assert.ok(body.paths['/api/v1/auth/users']);
+    assert.deepEqual(body.components.schemas.AuthRole.enum, ['Aluno', 'Professor', 'Administrador']);
+    assert.equal(body.components.schemas.AuthWhoamiResponse.properties.name.nullable, true);
+    assert.equal(body.components.schemas.AuthWhoamiResponse.properties.email.nullable, true);
     assert.ok(body.paths['/api/v1/ia/assessments']);
     assert.ok(body.paths['/api/v1/ia/assessments'].get);
     assert.ok(body.paths['/api/v1/ia/assessments/{assessmentId}/revisions']);

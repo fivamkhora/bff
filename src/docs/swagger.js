@@ -73,6 +73,16 @@ const authWhoamiExample = {
   role: 'Aluno'
 };
 
+const authInternalErrorResponse = {
+  description: 'Erro interno retornado pela API Auth',
+  content: {
+    'application/json': {
+      schema: { $ref: '#/components/schemas/AuthErrorResponse' },
+      example: { message: 'Internal server error' }
+    }
+  }
+};
+
 const avaliacaoIdParameter = {
   name: 'id',
   in: 'path',
@@ -366,6 +376,7 @@ const swaggerSpec = {
               }
             }
           },
+          500: authInternalErrorResponse,
           502: {
             description: 'Falha ao consultar a API Auth',
             content: {
@@ -390,7 +401,7 @@ const swaggerSpec = {
             required: false,
             schema: {
               type: 'string',
-              enum: ['Aluno', 'Professor']
+              enum: ['Aluno', 'Professor', 'Administrador']
             },
             description: 'Filtro opcional por role.'
           }
@@ -411,7 +422,7 @@ const swaggerSpec = {
             }
           },
           400: {
-            description: 'Role invalida. Use Aluno ou Professor.',
+            description: 'Role invalida. Use Aluno, Professor ou Administrador.',
             content: {
               'application/json': {
                 schema: {
@@ -433,6 +444,7 @@ const swaggerSpec = {
               }
             }
           },
+          500: authInternalErrorResponse,
           502: {
             description: 'Falha ao consultar a API Auth',
             content: {
@@ -450,7 +462,7 @@ const swaggerSpec = {
       post: {
         summary: 'Autentica usuario pela API Auth',
         tags: ['APIAUTH'],
-        description: 'Autentica com username e password. Retorna JWT e role. O role retornado usa person.role quando houver pessoa vinculada; caso contrario usa user.role.',
+        description: 'Autentica com username e password. Retorna JWT e role. O token contem sub, username e role. O role retornado usa person.role quando houver pessoa vinculada; caso contrario usa user.role.',
         requestBody: {
           required: true,
           content: {
@@ -480,6 +492,16 @@ const swaggerSpec = {
               }
             }
           },
+          400: {
+            description: 'Erro de validacao',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/AuthErrorResponse'
+                }
+              }
+            }
+          },
           401: {
             description: 'Credenciais invalidas',
             content: {
@@ -493,6 +515,7 @@ const swaggerSpec = {
               }
             }
           },
+          500: authInternalErrorResponse,
           502: {
             description: 'Falha ao consultar a API Auth',
             content: {
@@ -511,7 +534,7 @@ const swaggerSpec = {
         summary: 'Retorna o usuario autenticado pela API Auth',
         tags: ['APIAUTH'],
         security: [{ bearerAuth: [] }],
-        description: 'Rota privada. Envie Authorization: Bearer <token>. A API usa o sub do JWT para buscar o usuario autenticado.',
+        description: 'Rota privada. Envie Authorization: Bearer <token>. A API usa o sub do JWT para buscar o usuario autenticado. Sem perfil person vinculado, name e email retornam null.',
         responses: {
           200: {
             description: 'Usuario autenticado',
@@ -550,6 +573,7 @@ const swaggerSpec = {
               }
             }
           },
+          500: authInternalErrorResponse,
           502: {
             description: 'Falha ao consultar a API Auth',
             content: {
@@ -576,6 +600,7 @@ const swaggerSpec = {
             required: true,
             schema: {
               type: 'string',
+              pattern: '^[1-9]\\d*(,[1-9]\\d*){0,99}$',
               example: '10,25,30,31'
             },
             description: 'IDs numericos separados por virgula. Cada ID deve ser maior que zero.'
@@ -640,6 +665,7 @@ const swaggerSpec = {
               }
             }
           },
+          500: authInternalErrorResponse,
           502: {
             description: 'Falha ao consultar a API Auth',
             content: {
@@ -716,6 +742,7 @@ const swaggerSpec = {
               }
             }
           },
+          500: authInternalErrorResponse,
           502: {
             description: 'Falha ao consultar a API Auth',
             content: {
@@ -1492,6 +1519,7 @@ const swaggerSpec = {
       },
       AuthErrorResponse: {
         type: 'object',
+        required: ['message'],
         properties: {
           message: {
             type: 'string',
@@ -1509,6 +1537,11 @@ const swaggerSpec = {
           }
         }
       },
+      AuthRole: {
+        type: 'string',
+        enum: ['Aluno', 'Professor', 'Administrador'],
+        example: 'Aluno'
+      },
       CreateAuthUserRequest: {
         type: 'object',
         required: ['username', 'password', 'role', 'name', 'email'],
@@ -1523,9 +1556,7 @@ const swaggerSpec = {
             example: '123456'
           },
           role: {
-            type: 'string',
-            enum: ['Aluno', 'Professor'],
-            example: 'Aluno'
+            $ref: '#/components/schemas/AuthRole'
           },
           name: {
             type: 'string',
@@ -1566,20 +1597,20 @@ const swaggerSpec = {
       },
       AuthSigninResponse: {
         type: 'object',
+        required: ['token', 'role'],
         properties: {
           token: {
             type: 'string',
             example: '<jwt>'
           },
           role: {
-            type: 'string',
-            enum: ['Aluno', 'Professor'],
-            example: 'Aluno'
+            $ref: '#/components/schemas/AuthRole'
           }
         }
       },
       AuthWhoamiResponse: {
         type: 'object',
+        required: ['id', 'username', 'name', 'email', 'role'],
         properties: {
           id: {
             type: 'integer',
@@ -1591,22 +1622,23 @@ const swaggerSpec = {
           },
           name: {
             type: 'string',
+            nullable: true,
             example: authWhoamiExample.name
           },
           email: {
             type: 'string',
             format: 'email',
+            nullable: true,
             example: authWhoamiExample.email
           },
           role: {
-            type: 'string',
-            enum: ['Aluno', 'Professor'],
-            example: authWhoamiExample.role
+            $ref: '#/components/schemas/AuthRole'
           }
         }
       },
       AuthUser: {
         type: 'object',
+        required: ['id', 'username', 'role', 'cpf', 'name', 'birth', 'email', 'user_id'],
         properties: {
           id: {
             type: 'integer',
@@ -1617,12 +1649,11 @@ const swaggerSpec = {
             example: authUserExample.username
           },
           role: {
-            type: 'string',
-            enum: ['Aluno', 'Professor'],
-            example: authUserExample.role
+            $ref: '#/components/schemas/AuthRole'
           },
           cpf: {
             type: 'string',
+            nullable: true,
             example: authUserExample.cpf
           },
           name: {
@@ -1632,6 +1663,7 @@ const swaggerSpec = {
           birth: {
             type: 'string',
             format: 'date-time',
+            nullable: true,
             example: authUserExample.birth
           },
           email: {
@@ -1647,6 +1679,7 @@ const swaggerSpec = {
       },
       AuthUserDetails: {
         type: 'object',
+        required: ['id', 'username', 'role', 'cpf', 'name', 'birth', 'email', 'user_id'],
         properties: {
           id: {
             type: 'integer',
@@ -1657,30 +1690,33 @@ const swaggerSpec = {
             example: authUserDetailsExample.username
           },
           role: {
-            type: 'string',
-            enum: ['Aluno', 'Professor'],
-            example: authUserDetailsExample.role
+            $ref: '#/components/schemas/AuthRole'
           },
           cpf: {
             type: 'string',
+            nullable: true,
             example: authUserDetailsExample.cpf
           },
           name: {
             type: 'string',
+            nullable: true,
             example: authUserDetailsExample.name
           },
           birth: {
             type: 'string',
             format: 'date',
+            nullable: true,
             example: authUserDetailsExample.birth
           },
           email: {
             type: 'string',
             format: 'email',
+            nullable: true,
             example: authUserDetailsExample.email
           },
           user_id: {
             type: 'integer',
+            nullable: true,
             example: authUserDetailsExample.user_id
           }
         }
