@@ -17,6 +17,7 @@ avaliacaoRouter.get('/health', proxy('GET', '/healthcheck'));
 avaliacaoRouter.get('/exams', proxy('GET', '/exams', true));
 avaliacaoRouter.post('/exams', proxy('POST', '/exams'));
 avaliacaoRouter.get('/exams/upcoming', proxy('GET', '/exams/upcoming', true));
+avaliacaoRouter.get('/exams/import/api-ia', proxy('GET', '/exams/import/api-ia', true));
 avaliacaoRouter.post(
   '/exams/import/api-ia/:assessmentId',
   proxy('POST', (req) => `/exams/import/api-ia/${encodeURIComponent(req.params.assessmentId)}`)

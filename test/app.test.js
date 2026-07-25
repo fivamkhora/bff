@@ -64,6 +64,7 @@ describe('BFF API', () => {
     assert.ok(body.paths['/api/v1/avaliacao/exams']);
     assert.ok(body.paths['/api/v1/avaliacao/exams/upcoming']);
     assert.ok(body.paths['/api/v1/avaliacao/exams/import/api-ia/{assessmentId}'].post);
+    assert.ok(body.paths['/api/v1/avaliacao/exams/import/api-ia'].get);
     assert.ok(body.paths['/api/v1/avaliacao/exams/{id}'].delete);
     assert.ok(body.paths['/api/v1/avaliacao/questions/{id}'].put);
     assert.ok(body.paths['/api/v1/avaliacao/submissions']);

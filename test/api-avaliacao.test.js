@@ -92,6 +92,17 @@ describe('API Avaliacao proxy', () => {
     assert.deepEqual(body.body, payload);
   });
 
+  it('lista somente avaliacoes importadas com os filtros informados', async () => {
+    const response = await fetch(
+      `${bffBaseUrl}/api/v1/avaliacao/exams/import/api-ia?classroomId=turma-01&status=PUBLISHED`
+    );
+    const body = await response.json();
+
+    assert.equal(response.status, 200);
+    assert.equal(body.method, 'GET');
+    assert.equal(body.url, '/exams/import/api-ia?classroomId=turma-01&status=PUBLISHED');
+  });
+
   it('codifica o identificador ao montar a rota de detalhe', async () => {
     const response = await fetch(`${bffBaseUrl}/api/v1/avaliacao/answers/resposta%2F01`);
     const body = await response.json();

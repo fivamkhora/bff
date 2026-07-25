@@ -232,6 +232,26 @@ const avaliacaoPaths = {
       responses: avaliacaoResponses('Avaliacao importada com sucesso', 201)
     }
   },
+  '/api/v1/avaliacao/exams/import/api-ia': {
+    get: {
+      summary: 'Lista avaliacoes importadas da API-IA',
+      tags: ['APIAVALIACAO'],
+      description: 'Retorna somente exames criados ou atualizados por importacao da API-IA.',
+      parameters: [
+        { name: 'classroomId', in: 'query', schema: { type: 'string' } },
+        { name: 'teacherId', in: 'query', schema: { type: 'string' } },
+        {
+          name: 'status',
+          in: 'query',
+          schema: { $ref: '#/components/schemas/AvaliacaoExamStatus' }
+        }
+      ],
+      responses: avaliacaoResponses('Avaliacoes importadas listadas com sucesso', 200, {
+        type: 'array',
+        items: { $ref: '#/components/schemas/AvaliacaoExam' }
+      })
+    }
+  },
   ...avaliacaoResourcePaths('questions', 'questoes', {
     entitySchema: 'AvaliacaoQuestion',
     createSchema: 'CreateAvaliacaoQuestionRequest',
