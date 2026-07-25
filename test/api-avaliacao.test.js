@@ -75,6 +75,23 @@ describe('API Avaliacao proxy', () => {
     assert.deepEqual(body.body, payload);
   });
 
+  it('encaminha a importacao de uma avaliacao da API-IA', async () => {
+    const payload = { classroomId: 'turma-01', teacherId: 'professor-01' };
+    const response = await fetch(
+      `${bffBaseUrl}/api/v1/avaliacao/exams/import/api-ia/assessment-01`,
+      {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(payload)
+      }
+    );
+    const body = await response.json();
+
+    assert.equal(response.status, 201);
+    assert.equal(body.url, '/exams/import/api-ia/assessment-01');
+    assert.deepEqual(body.body, payload);
+  });
+
   it('codifica o identificador ao montar a rota de detalhe', async () => {
     const response = await fetch(`${bffBaseUrl}/api/v1/avaliacao/answers/resposta%2F01`);
     const body = await response.json();

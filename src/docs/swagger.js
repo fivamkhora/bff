@@ -90,40 +90,63 @@ const avaliacaoIdParameter = {
   schema: { type: 'string', format: 'uuid' }
 };
 
-const avaliacaoJsonBody = {
-  required: true,
-  content: {
-    'application/json': {
-      schema: { type: 'object', additionalProperties: true }
-    }
-  }
-};
-
-function avaliacaoResponses(successDescription, successStatus = 200) {
+function avaliacaoJsonBody(schemaName) {
   return {
-    [successStatus]: { description: successDescription },
-    400: { description: 'Dados ou filtros invalidos' },
-    404: { description: 'Registro nao encontrado' },
-    409: { description: 'Conflito com regra de negocio' },
-    502: { description: 'Falha ao consultar a API Avaliacao' }
+    required: true,
+    content: {
+      'application/json': {
+        schema: { $ref: `#/components/schemas/${schemaName}` }
+      }
+    }
   };
 }
 
-function avaliacaoResourcePaths(resource, label, queryParameters = []) {
+function avaliacaoResponses(successDescription, successStatus = 200, successSchema, errorSchema = 'AvaliacaoErrorResponse') {
+  const success = { description: successDescription };
+  if (successSchema) {
+    success.content = {
+      'application/json': { schema: successSchema }
+    };
+  }
+
+  const errorContent = {
+    'application/json': { schema: { $ref: `#/components/schemas/${errorSchema}` } }
+  };
+
+  return {
+    [successStatus]: success,
+    400: { description: 'Dados ou filtros invalidos', content: errorContent },
+    404: { description: 'Registro nao encontrado', content: errorContent },
+    409: { description: 'Conflito com regra de negocio', content: errorContent },
+    500: { description: 'Erro interno retornado pela API Avaliacao', content: errorContent },
+    502: {
+      description: 'Falha do BFF ao consultar a API Avaliacao',
+      content: {
+        'application/json': { schema: { $ref: '#/components/schemas/ErrorResponse' } }
+      }
+    }
+  };
+}
+
+function avaliacaoResourcePaths(resource, label, options) {
   const basePath = `/api/v1/avaliacao/${resource}`;
+  const entitySchema = { $ref: `#/components/schemas/${options.entitySchema}` };
   return {
     [basePath]: {
       get: {
         summary: `Lista ${label}`,
         tags: ['APIAVALIACAO'],
-        parameters: queryParameters,
-        responses: avaliacaoResponses(`${label} listados com sucesso`)
+        parameters: options.queryParameters,
+        responses: avaliacaoResponses(`${label} listados com sucesso`, 200, {
+          type: 'array',
+          items: entitySchema
+        }, options.errorSchema)
       },
       post: {
         summary: `Cria ${label}`,
         tags: ['APIAVALIACAO'],
-        requestBody: avaliacaoJsonBody,
-        responses: avaliacaoResponses(`${label} criado com sucesso`, 201)
+        requestBody: avaliacaoJsonBody(options.createSchema),
+        responses: avaliacaoResponses(`${label} criado com sucesso`, 201, entitySchema, options.errorSchema)
       }
     },
     [`${basePath}/{id}`]: {
@@ -131,20 +154,22 @@ function avaliacaoResourcePaths(resource, label, queryParameters = []) {
         summary: `Busca ${label} por ID`,
         tags: ['APIAVALIACAO'],
         parameters: [avaliacaoIdParameter],
-        responses: avaliacaoResponses(`${label} encontrado`)
+        responses: avaliacaoResponses(`${label} encontrado`, 200, entitySchema, options.errorSchema)
       },
       put: {
         summary: `Atualiza parcialmente ${label}`,
         tags: ['APIAVALIACAO'],
         parameters: [avaliacaoIdParameter],
-        requestBody: avaliacaoJsonBody,
-        responses: avaliacaoResponses(`${label} atualizado`)
+        requestBody: avaliacaoJsonBody(options.updateSchema),
+        responses: avaliacaoResponses(`${label} atualizado`, 200, entitySchema, options.errorSchema)
       },
       delete: {
         summary: `Remove ${label}`,
         tags: ['APIAVALIACAO'],
         parameters: [avaliacaoIdParameter],
-        responses: avaliacaoResponses(`${label} removido`)
+        responses: avaliacaoResponses(`${label} removido`, 200, {
+          $ref: '#/components/schemas/AvaliacaoSuccessMessage'
+        }, options.errorSchema)
       }
     }
   };
@@ -158,15 +183,20 @@ const avaliacaoPaths = {
       responses: avaliacaoResponses('API Avaliacao disponivel')
     }
   },
-  ...avaliacaoResourcePaths('exams', 'avaliacoes', [
-    { name: 'classroomId', in: 'query', schema: { type: 'string' } },
-    { name: 'teacherId', in: 'query', schema: { type: 'string' } },
-    {
-      name: 'status',
-      in: 'query',
-      schema: { type: 'string', enum: ['DRAFT', 'PUBLISHED', 'CLOSED', 'CORRECTED'] }
-    }
-  ]),
+  ...avaliacaoResourcePaths('exams', 'avaliacoes', {
+    entitySchema: 'AvaliacaoExam',
+    createSchema: 'CreateAvaliacaoExamRequest',
+    updateSchema: 'UpdateAvaliacaoExamRequest',
+    queryParameters: [
+      { name: 'classroomId', in: 'query', schema: { type: 'string' } },
+      { name: 'teacherId', in: 'query', schema: { type: 'string' } },
+      {
+        name: 'status',
+        in: 'query',
+        schema: { $ref: '#/components/schemas/AvaliacaoExamStatus' }
+      }
+    ]
+  }),
   '/api/v1/avaliacao/exams/upcoming': {
     get: {
       summary: 'Lista as proximas avaliacoes publicadas de uma turma',
@@ -174,30 +204,71 @@ const avaliacaoPaths = {
       parameters: [
         { name: 'classroomId', in: 'query', required: true, schema: { type: 'string' } }
       ],
-      responses: avaliacaoResponses('Proximas avaliacoes encontradas')
+      responses: avaliacaoResponses('Proximas avaliacoes encontradas', 200, {
+        type: 'object',
+        properties: {
+          message: { type: 'string' },
+          total: { type: 'integer' },
+          exams: {
+            type: 'array',
+            items: { $ref: '#/components/schemas/AvaliacaoExam' }
+          }
+        }
+      })
     }
   },
-  ...avaliacaoResourcePaths('questions', 'questoes', [
-    { name: 'examId', in: 'query', schema: { type: 'string', format: 'uuid' } },
-    {
-      name: 'type',
-      in: 'query',
-      schema: { type: 'string', enum: ['MULTIPLE_CHOICE', 'TRUE_FALSE', 'ESSAY'] }
+  '/api/v1/avaliacao/exams/import/api-ia/{assessmentId}': {
+    post: {
+      summary: 'Importa uma avaliacao e suas questoes da API-IA',
+      tags: ['APIAVALIACAO'],
+      description: 'Cria ou atualiza o exame e suas questoes pelo assessmentId, incluindo alternativas, gabarito e rubrica.',
+      parameters: [{
+        name: 'assessmentId',
+        in: 'path',
+        required: true,
+        schema: { type: 'string', format: 'uuid' }
+      }],
+      requestBody: avaliacaoJsonBody('ImportAvaliacaoExamRequest'),
+      responses: avaliacaoResponses('Avaliacao importada com sucesso', 201)
     }
-  ]),
-  ...avaliacaoResourcePaths('submissions', 'submissoes', [
-    { name: 'examId', in: 'query', schema: { type: 'string', format: 'uuid' } },
-    { name: 'studentId', in: 'query', schema: { type: 'string' } },
-    {
-      name: 'status',
-      in: 'query',
-      schema: { type: 'string', enum: ['NOT_STARTED', 'IN_PROGRESS', 'SUBMITTED', 'CORRECTED'] }
-    }
-  ]),
-  ...avaliacaoResourcePaths('answers', 'respostas', [
-    { name: 'submissionId', in: 'query', schema: { type: 'string', format: 'uuid' } },
-    { name: 'questionId', in: 'query', schema: { type: 'string', format: 'uuid' } }
-  ])
+  },
+  ...avaliacaoResourcePaths('questions', 'questoes', {
+    entitySchema: 'AvaliacaoQuestion',
+    createSchema: 'CreateAvaliacaoQuestionRequest',
+    updateSchema: 'UpdateAvaliacaoQuestionRequest',
+    queryParameters: [
+      { name: 'examId', in: 'query', schema: { type: 'string', format: 'uuid' } },
+      {
+        name: 'type',
+        in: 'query',
+        schema: { $ref: '#/components/schemas/AvaliacaoQuestionType' }
+      }
+    ]
+  }),
+  ...avaliacaoResourcePaths('submissions', 'submissoes', {
+    entitySchema: 'AvaliacaoSubmission',
+    createSchema: 'CreateAvaliacaoSubmissionRequest',
+    updateSchema: 'UpdateAvaliacaoSubmissionRequest',
+    queryParameters: [
+      { name: 'examId', in: 'query', schema: { type: 'string', format: 'uuid' } },
+      { name: 'studentId', in: 'query', schema: { type: 'string' } },
+      {
+        name: 'status',
+        in: 'query',
+        schema: { $ref: '#/components/schemas/AvaliacaoSubmissionStatus' }
+      }
+    ]
+  }),
+  ...avaliacaoResourcePaths('answers', 'respostas', {
+    entitySchema: 'AvaliacaoAnswer',
+    createSchema: 'CreateAvaliacaoAnswerRequest',
+    updateSchema: 'UpdateAvaliacaoAnswerRequest',
+    errorSchema: 'AvaliacaoAnswerErrorResponse',
+    queryParameters: [
+      { name: 'submissionId', in: 'query', schema: { type: 'string', format: 'uuid' } },
+      { name: 'questionId', in: 'query', schema: { type: 'string', format: 'uuid' } }
+    ]
+  })
 };
 
 const swaggerSpec = {
@@ -1481,6 +1552,229 @@ const swaggerSpec = {
             type: 'string',
             example: 'Mensagem de erro'
           }
+        }
+      },
+      AvaliacaoErrorResponse: {
+        type: 'object',
+        required: ['error'],
+        properties: {
+          error: { type: 'string', example: 'Dados invalidos.' }
+        }
+      },
+      AvaliacaoAnswerErrorResponse: {
+        type: 'object',
+        required: ['message'],
+        properties: {
+          message: { type: 'string', example: 'Dados invalidos.' }
+        }
+      },
+      AvaliacaoSuccessMessage: {
+        type: 'object',
+        required: ['message'],
+        properties: {
+          message: { type: 'string', example: 'Operacao realizada com sucesso.' }
+        }
+      },
+      AvaliacaoExamStatus: {
+        type: 'string',
+        enum: ['DRAFT', 'PUBLISHED', 'CLOSED', 'CORRECTED']
+      },
+      AvaliacaoQuestionType: {
+        type: 'string',
+        enum: ['MULTIPLE_CHOICE', 'TRUE_FALSE', 'ESSAY']
+      },
+      AvaliacaoSubmissionStatus: {
+        type: 'string',
+        enum: ['NOT_STARTED', 'IN_PROGRESS', 'SUBMITTED', 'CORRECTED']
+      },
+      AvaliacaoExam: {
+        type: 'object',
+        required: ['id', 'title', 'description', 'classroomId', 'teacherId', 'status', 'availableAt', 'deadlineAt'],
+        properties: {
+          id: { type: 'string', format: 'uuid' },
+          title: { type: 'string', example: 'Avaliacao de Matematica' },
+          description: { type: 'string', example: 'Conteudo do primeiro semestre' },
+          classroomId: { type: 'string', example: 'classroom-01' },
+          teacherId: { type: 'string', example: 'teacher-01' },
+          status: { $ref: '#/components/schemas/AvaliacaoExamStatus' },
+          availableAt: { type: 'string', format: 'date-time' },
+          deadlineAt: { type: 'string', format: 'date-time' },
+          timeLimit: { type: 'integer', nullable: true, example: 90 },
+          createdAt: { type: 'string', format: 'date-time' },
+          updatedAt: { type: 'string', format: 'date-time' }
+        }
+      },
+      CreateAvaliacaoExamRequest: {
+        type: 'object',
+        required: ['title', 'description', 'classroomId', 'teacherId', 'availableAt', 'deadlineAt'],
+        properties: {
+          title: { type: 'string', example: 'Avaliacao de Matematica' },
+          description: { type: 'string', example: 'Conteudo do primeiro semestre' },
+          classroomId: { type: 'string', example: 'classroom-01' },
+          teacherId: { type: 'string', example: 'teacher-01' },
+          availableAt: { type: 'string', format: 'date-time', example: '2026-08-01T13:00:00.000Z' },
+          deadlineAt: { type: 'string', format: 'date-time', example: '2026-08-01T14:30:00.000Z' },
+          timeLimit: { type: 'integer', minimum: 1, example: 90 }
+        }
+      },
+      UpdateAvaliacaoExamRequest: {
+        type: 'object',
+        properties: {
+          title: { type: 'string' },
+          description: { type: 'string' },
+          classroomId: { type: 'string' },
+          teacherId: { type: 'string' },
+          availableAt: { type: 'string', format: 'date-time' },
+          deadlineAt: { type: 'string', format: 'date-time' },
+          status: { $ref: '#/components/schemas/AvaliacaoExamStatus' },
+          timeLimit: { type: 'integer', minimum: 1, nullable: true }
+        }
+      },
+      ImportAvaliacaoExamRequest: {
+        type: 'object',
+        required: ['classroomId', 'teacherId'],
+        properties: {
+          classroomId: { type: 'string', example: 'turma-01' },
+          teacherId: { type: 'string', example: 'professor-01' }
+        }
+      },
+      AvaliacaoQuestionOption: {
+        type: 'object',
+        required: ['key', 'text'],
+        properties: {
+          key: { type: 'string', example: 'A' },
+          text: { type: 'string', example: '3' }
+        }
+      },
+      AvaliacaoQuestion: {
+        type: 'object',
+        required: ['id', 'examId', 'statement', 'type', 'points', 'position'],
+        properties: {
+          id: { type: 'string', format: 'uuid' },
+          examId: { type: 'string', format: 'uuid' },
+          statement: { type: 'string' },
+          type: { $ref: '#/components/schemas/AvaliacaoQuestionType' },
+          options: {
+            type: 'array',
+            nullable: true,
+            minItems: 2,
+            items: { $ref: '#/components/schemas/AvaliacaoQuestionOption' }
+          },
+          correctAnswer: { type: 'string', nullable: true },
+          points: {
+            type: 'string',
+            example: '1.00',
+            description: 'Decimal retornado pelo Prisma como string.'
+          },
+          position: { type: 'integer', minimum: 1 },
+          createdAt: { type: 'string', format: 'date-time' },
+          updatedAt: { type: 'string', format: 'date-time' }
+        }
+      },
+      CreateAvaliacaoQuestionRequest: {
+        type: 'object',
+        required: ['examId', 'statement', 'position'],
+        properties: {
+          examId: { type: 'string', format: 'uuid' },
+          statement: { type: 'string', example: 'Quanto e 2 + 2?' },
+          type: { $ref: '#/components/schemas/AvaliacaoQuestionType' },
+          options: {
+            type: 'array',
+            nullable: true,
+            minItems: 2,
+            items: { $ref: '#/components/schemas/AvaliacaoQuestionOption' }
+          },
+          correctAnswer: { type: 'string', nullable: true, example: 'B' },
+          points: { type: 'number', format: 'double', exclusiveMinimum: true, minimum: 0, default: 1 },
+          position: { type: 'integer', minimum: 1 }
+        }
+      },
+      UpdateAvaliacaoQuestionRequest: {
+        type: 'object',
+        properties: {
+          examId: { type: 'string', format: 'uuid' },
+          statement: { type: 'string' },
+          type: { $ref: '#/components/schemas/AvaliacaoQuestionType' },
+          options: {
+            type: 'array',
+            nullable: true,
+            minItems: 2,
+            items: { $ref: '#/components/schemas/AvaliacaoQuestionOption' }
+          },
+          correctAnswer: { type: 'string', nullable: true },
+          points: { type: 'number', format: 'double', exclusiveMinimum: true, minimum: 0 },
+          position: { type: 'integer', minimum: 1 }
+        }
+      },
+      AvaliacaoSubmission: {
+        type: 'object',
+        required: ['id', 'examId', 'studentId', 'status'],
+        properties: {
+          id: { type: 'string', format: 'uuid' },
+          examId: { type: 'string', format: 'uuid' },
+          studentId: { type: 'string' },
+          status: { $ref: '#/components/schemas/AvaliacaoSubmissionStatus' },
+          startedAt: { type: 'string', format: 'date-time', nullable: true },
+          submittedAt: { type: 'string', format: 'date-time', nullable: true },
+          score: { type: 'number', format: 'double', nullable: true, minimum: 0 },
+          createdAt: { type: 'string', format: 'date-time' },
+          updatedAt: { type: 'string', format: 'date-time' }
+        }
+      },
+      CreateAvaliacaoSubmissionRequest: {
+        type: 'object',
+        required: ['examId', 'studentId'],
+        properties: {
+          examId: { type: 'string', format: 'uuid' },
+          studentId: { type: 'string', example: 'student-01' }
+        }
+      },
+      UpdateAvaliacaoSubmissionRequest: {
+        type: 'object',
+        properties: {
+          examId: { type: 'string', format: 'uuid' },
+          studentId: { type: 'string' },
+          status: { $ref: '#/components/schemas/AvaliacaoSubmissionStatus' },
+          startedAt: { type: 'string', format: 'date-time', nullable: true },
+          submittedAt: { type: 'string', format: 'date-time', nullable: true },
+          score: { type: 'number', format: 'double', nullable: true, minimum: 0 }
+        }
+      },
+      AvaliacaoAnswer: {
+        type: 'object',
+        required: ['id', 'submissionId', 'questionId'],
+        properties: {
+          id: { type: 'string', format: 'uuid' },
+          submissionId: { type: 'string', format: 'uuid' },
+          questionId: { type: 'string', format: 'uuid' },
+          content: { type: 'string', nullable: true },
+          selectedOption: { type: 'string', nullable: true, example: 'B' },
+          isCorrect: { type: 'boolean', nullable: true },
+          score: { type: 'number', format: 'double', nullable: true, minimum: 0 },
+          feedback: { type: 'string', nullable: true },
+          createdAt: { type: 'string', format: 'date-time' },
+          updatedAt: { type: 'string', format: 'date-time' }
+        }
+      },
+      CreateAvaliacaoAnswerRequest: {
+        type: 'object',
+        required: ['submissionId', 'questionId'],
+        properties: {
+          submissionId: { type: 'string', format: 'uuid' },
+          questionId: { type: 'string', format: 'uuid' },
+          content: { type: 'string', nullable: true, description: 'Obrigatorio para questoes ESSAY.' },
+          selectedOption: { type: 'string', nullable: true, description: 'Obrigatorio para questoes objetivas.' }
+        }
+      },
+      UpdateAvaliacaoAnswerRequest: {
+        type: 'object',
+        description: 'Nao envie content e campos de correcao manual na mesma requisicao.',
+        properties: {
+          content: { type: 'string', nullable: true },
+          selectedOption: { type: 'string', nullable: true },
+          score: { type: 'number', format: 'double', minimum: 0, nullable: true },
+          feedback: { type: 'string', nullable: true },
+          isCorrect: { type: 'boolean', nullable: true }
         }
       },
       HealthResponse: {

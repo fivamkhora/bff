@@ -63,10 +63,23 @@ describe('BFF API', () => {
     assert.ok(body.paths['/api/v1/avaliacao/health']);
     assert.ok(body.paths['/api/v1/avaliacao/exams']);
     assert.ok(body.paths['/api/v1/avaliacao/exams/upcoming']);
+    assert.ok(body.paths['/api/v1/avaliacao/exams/import/api-ia/{assessmentId}'].post);
     assert.ok(body.paths['/api/v1/avaliacao/exams/{id}'].delete);
     assert.ok(body.paths['/api/v1/avaliacao/questions/{id}'].put);
     assert.ok(body.paths['/api/v1/avaliacao/submissions']);
     assert.ok(body.paths['/api/v1/avaliacao/answers/{id}']);
+    assert.deepEqual(body.components.schemas.AvaliacaoExamStatus.enum, [
+      'DRAFT', 'PUBLISHED', 'CLOSED', 'CORRECTED'
+    ]);
+    assert.deepEqual(body.components.schemas.AvaliacaoSubmissionStatus.enum, [
+      'NOT_STARTED', 'IN_PROGRESS', 'SUBMITTED', 'CORRECTED'
+    ]);
+    assert.deepEqual(body.components.schemas.ImportAvaliacaoExamRequest.required, [
+      'classroomId', 'teacherId'
+    ]);
+    assert.ok(body.components.schemas.UpdateAvaliacaoAnswerRequest.properties.score);
+    assert.ok(body.components.schemas.UpdateAvaliacaoAnswerRequest.properties.feedback);
+    assert.ok(body.components.schemas.UpdateAvaliacaoAnswerRequest.properties.isCorrect);
   });
 
   it('protects the authenticated user route', async () => {

@@ -17,6 +17,10 @@ avaliacaoRouter.get('/health', proxy('GET', '/healthcheck'));
 avaliacaoRouter.get('/exams', proxy('GET', '/exams', true));
 avaliacaoRouter.post('/exams', proxy('POST', '/exams'));
 avaliacaoRouter.get('/exams/upcoming', proxy('GET', '/exams/upcoming', true));
+avaliacaoRouter.post(
+  '/exams/import/api-ia/:assessmentId',
+  proxy('POST', (req) => `/exams/import/api-ia/${encodeURIComponent(req.params.assessmentId)}`)
+);
 avaliacaoRouter.get('/exams/:id', proxy('GET', (req) => `/exams/${encodeURIComponent(req.params.id)}`));
 avaliacaoRouter.put('/exams/:id', proxy('PUT', (req) => `/exams/${encodeURIComponent(req.params.id)}`));
 avaliacaoRouter.delete('/exams/:id', proxy('DELETE', (req) => `/exams/${encodeURIComponent(req.params.id)}`));

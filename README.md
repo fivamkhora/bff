@@ -138,6 +138,7 @@ Regras principais:
 - `GET /api/v1/avaliacao/health` - health check da API Avaliacao
 - `GET|POST /api/v1/avaliacao/exams` - lista ou cria avaliacoes
 - `GET /api/v1/avaliacao/exams/upcoming?classroomId=...` - lista proximas avaliacoes da turma
+- `POST /api/v1/avaliacao/exams/import/api-ia/:assessmentId` - importa avaliacao e questoes da API-IA
 - `GET|PUT|DELETE /api/v1/avaliacao/exams/:id` - consulta, atualiza ou remove uma avaliacao
 - `GET|POST /api/v1/avaliacao/questions` - lista ou cria questoes
 - `GET|PUT|DELETE /api/v1/avaliacao/questions/:id` - consulta, atualiza ou remove uma questao
@@ -147,6 +148,14 @@ Regras principais:
 - `GET|PUT|DELETE /api/v1/avaliacao/answers/:id` - consulta, atualiza ou remove uma resposta
 
 As queries aceitas pelo microsservico sao repassadas integralmente. O BFF tambem encaminha o header `Authorization` quando informado.
+
+Regras principais:
+
+- A importacao da API-IA exige `classroomId` e `teacherId` no corpo e cria ou atualiza o exame pelo `assessmentId`.
+- Avaliacoes usam os estados `DRAFT`, `PUBLISHED`, `CLOSED` e `CORRECTED`.
+- Questoes podem ser `MULTIPLE_CHOICE`, `TRUE_FALSE` ou `ESSAY`; questoes objetivas sao corrigidas automaticamente.
+- Submissoes seguem `NOT_STARTED`, `IN_PROGRESS`, `SUBMITTED` e `CORRECTED`.
+- Apenas respostas dissertativas aceitam correcao manual com `score`, `feedback` e `isCorrect`.
 
 ## Docker
 
